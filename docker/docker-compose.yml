@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../server/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.server
+    restart: unless-stopped
+    environment:
+      PORT: ${PORT}
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+    ports:
+      - "${PORT}:${PORT}"
+    depends_on:
+      - db
+
+  caddy:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - server
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

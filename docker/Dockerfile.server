@@ -1,0 +1,16 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY package.json ./
+COPY server/package.json ./server/
+COPY shared/package.json ./shared/
+
+RUN npm install
+
+COPY server/ ./server/
+COPY shared/ ./shared/
+
+WORKDIR /app/server
+
+CMD ["node", "index.js"]
