@@ -33,3 +33,27 @@ export const getPlayerRoster = async () => {
     console.log(playersList);
 };
 
+export async function getTeams() {
+  const response = await fetch(`${BASE_URL}/teams?sportId=1&season=2026`);
+  if (!response.ok) throw new Error(`MLB API error: ${response.status}`);
+  return response.json();
+}
+
+export async function getRoster(teamId) {
+  const response = await fetch(`${BASE_URL}/teams/${teamId}/roster?season=2026`);
+  if (!response.ok) throw new Error(`MLB API error: ${response.status}`);
+  return response.json();
+}
+
+export async function getPlayer(playerId) {
+  const response = await fetch(`${BASE_URL}/people/${playerId}`);
+  if (!response.ok) throw new Error(`MLB API error: ${response.status}`);
+  return response.json();
+}
+
+export async function getSchedule(date) {
+  const response = await fetch(`${BASE_URL}/schedule?sportId=1&date=${date}`);
+  if (!response.ok) throw new Error(`MLB API error: ${response.status}`);
+  return response.json();
+}
+
