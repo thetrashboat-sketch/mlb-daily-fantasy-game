@@ -3,6 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
+import { scheduleSyncPlayers } from './services/mlbApi.js';
+
 
 dotenv.config({ path: '../.env' });
 
@@ -20,4 +22,5 @@ app.get('/health', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  scheduleSyncPlayers();
 });
