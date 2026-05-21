@@ -26,6 +26,7 @@ export const getPlayerRoster = async () => {
                     team_id: team.id,
                     team_abbr: team.abbreviation,
                     position: player.position.name,
+                    position_abbr: player.position.abbreviation,
                     jersey_number: player.jerseyNumber,
                     headshot_url: `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.person.id}/headshot/67/current`,
                     is_active: true,
@@ -40,7 +41,7 @@ export const getPlayerRoster = async () => {
 export async function syncPlayers() {
     console.log('[playerSync] Starting player sync...');
 
-    const players = getPlayerRoster();
+    const players = await getPlayerRoster();
 
     if (players.length === 0) {
         throw new Error('[playerSync] API returned 0 players — aborting to avoid deactivating everyone');
@@ -56,19 +57,20 @@ export async function syncPlayers() {
         for (const p of players) {
             await client.query(
                 `INSERT INTO players
-                (mlb_id, name, team_id, team, team_abbr, position, jersey_number, headshot_url, is_active, updated_at)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, TRUE, NOW())
+                (mlb_id, name, team_id, team_name, team_abbr, position, position_abbr, jersey_number, headshot_url, is_active, updated_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, TRUE, NOW())
                 ON CONFLICT (mlb_id) DO UPDATE SET
                 name          = EXCLUDED.name,
                 team_id       = EXCLUDED.team_id,
-                team          = EXCLUDED.team,
+                team_name     = EXCLUDED.team_name,
                 team_abbr     = EXCLUDED.team_abbr,
                 position      = EXCLUDED.position,
+                position_abbr = EXCLUDED.position_abbr,
                 jersey_number = EXCLUDED.jersey_number,
                 headshot_url  = EXCLUDED.headshot_url,
                 is_active     = TRUE,
                 updated_at    = NOW()`,
-            [p.mlb_id, p.name, p.team_id, p.team, p.team_abbr, p.position, p.jersey_number, p.headshot_url]
+            [p.mlb_id, p.name, p.team_id, p.team_name, p.team_abbr, p.position, p.position_abbr, p.jersey_number, p.headshot_url]
             );
         }
 

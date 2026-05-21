@@ -3,7 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
-import { scheduleSyncPlayers } from './services/mlbApi.js';
+import { scheduleSyncPlayers } from './services/mlb.js';
+import { syncPlayers, getPlayerRoster, getTeams, getRoster } from './services/mlb.js'; // remove this later
+
 
 
 dotenv.config({ path: '../.env' });
