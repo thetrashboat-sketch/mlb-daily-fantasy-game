@@ -18,20 +18,24 @@ export async function claimAssignment(req, res) {
         );
 
         if (existing.rows.length > 0){
+            await client.query('ROLLBACK');
             return res.status(409).json({ error: 'You have already claimed a hitter today' });
-
         }
 
         //pick a random active hitter 
         const playerResult = await client.query(
-            `SELECT id, name, team_id, team_name, team_abbr, position, headshot_url
-            FROM players
-            WHERE is_active = TRUE
+            `SELECT p.id, p.name, p.team_id, p.team_name, p.team_abbr, p.position, p.headshot_url
+            FROM players p
+            JOIN scheduled_games sg
+                ON p.team_id = sg.home_team_id OR p.team_id = sg.away_team_id 
+            WHERE p.is_active = TRUE AND sg.game_date = $1
             ORDER BY Random()
-            Limit 1`
+            Limit 1`,
+            [today]
         );
 
         if (playerResult.rows.length === 0){
+            await client.query('ROLLBACK');
             return res.status(503).json({ error: 'No active players available'});
         }
 
@@ -51,7 +55,7 @@ export async function claimAssignment(req, res) {
             claimed_at: assignment.rows[0].claimed_at,
             player: {
                 name: player.name,
-                team: player.team,
+                team_name: player.team_name,
                 team_abbr: player.team_abbr,
                 position: player.position,
                 headshot_url: player.headshot_url,
@@ -59,6 +63,7 @@ export async function claimAssignment(req, res) {
         });
 
     } catch(err){
+        await client.query('ROLLBACK');
         console.error('[claimAssignment]', err.message);
         res.status(500).json({ error: 'Server error' });
     } finally {

@@ -39,6 +39,44 @@ export const getPlayerRoster = async () => {
     return playersList;
 };
 
+export async function getScheduledGames(date) {
+    const res = await fetch(`${BASE_URL}/schedule?sportId=1&date=${date}`);
+    const data = await res.json();
+
+    if (data.error) throw new Error(`${data.error.message}`);
+
+    const games = [];
+    for (const dateEntry of data.dates ?? []) {
+        for (const game of dateEntry.games ?? []) {
+            games.push({
+                game_pk: game.gamePk,
+                game_date: dateEntry.date,
+                home_team_id: game.teams.home.team.id,
+                away_team_id: game.teams.away.team.id,
+            });
+        }
+    }
+    return games;
+}
+
+export async function syncScheduledGames(date, client) {
+    console.log(`[gamesSync] Syncing scheduled games for ${date}...`);
+
+    const games = await getScheduledGames(date);
+
+    for (const g of games) {
+        await client.query(
+            `INSERT INTO scheduled_games (game_date, game_pk, home_team_id, away_team_id)
+             VALUES ($1, $2, $3, $4)
+             ON CONFLICT (game_date, game_pk) DO NOTHING`,
+            [g.game_date, g.game_pk, g.home_team_id, g.away_team_id]
+        );
+    }
+
+    console.log(`[gamesSync] Done — upserted ${games.length} games for ${date}`);
+    return games.length;
+}
+
 export async function syncPlayers() {
     console.log('[playerSync] Starting player sync...');
 
@@ -85,6 +123,10 @@ export async function syncPlayers() {
             [activeIds]
         );
 
+        // Sync today's scheduled games in the same transaction
+        const today = new Date().toISOString().split('T')[0];
+        const gamesCount = await syncScheduledGames(today, client);
+
         await client.query('COMMIT');
         console.log(`[playerSync] Done — upserted: ${players.length}, deactivated: ${rowCount}`);
         return { upserted: players.length, deactivated: rowCount };
@@ -98,7 +140,7 @@ export async function syncPlayers() {
 }
 
 export function scheduleSyncPlayers() {
-  cron.schedule('0 6 * * *', async () => {
+  cron.schedule('0 10 * * *', async () => {
     console.log('[cron] Running scheduled player sync...');
     try {
       const result = await syncPlayers();
@@ -108,43 +150,44 @@ export function scheduleSyncPlayers() {
     }
   });
 
-  console.log('[cron] Player sync scheduled for 6:00 AM daily');
+  console.log('[cron] Player sync scheduled for 10:00 AM daily');
 }
 
 export async function getBoxScore(gamePk){
-    const bxScoreRes = await fetch(`https://statsapi.mlb.com/api/v1/game/${gamePk}/boxscore`);
+    const bxScoreRes = await fetch(`${BASE_URL}/game/${gamePk}/boxscore`);
     const bxScoreData = await bxScoreRes.json();
     const stats = {};
 
     if (bxScoreData.error) throw new Error(`${bxScoreData.error.message}`);
 
-    const homePlayers = bxScoreData.teams.home.players;
-    const awayPlayers = bxScoreData.teams.away.players;
+    const allPlayers = [
+        ...Object.values(bxScoreData.teams.home.players),
+        ...Object.values(bxScoreData.teams.away.players),
+    ];
 
-    for (const [key, value] of Object.entries(awayPlayers)){
-        if (value.position.code !== '1'){
-            stats[value.person.id] = value.stats;
+    for (const player of allPlayers) {
+        if (player.position.code !== '1') {
+            stats[player.person.id] = player.stats;
         }
     }
 
-    for (const [key, value] of Object.entries(homePlayers)){
-        if (value.position.code !== '1'){
-            stats[value.person.id] = value.stats;
-        }
-    }
-
-    console.log(caclulateFantasyPointS(stats['682177']));
+    //console.log(calculateFantasyPoints(stats['682177']));
 
     return stats;
 }
 
-export function caclulateFantasyPointS(stats){
+export function calculateFantasyPoints(stats){
     let score = 0;
     const batting = stats.batting;
 
+    if (!batting || Object.keys(batting).length === 0) {
+        return 0;
+    }
+
     //calculate singles
-    score += (batting.hits - (batting.doubles + batting.triples + batting.homeRuns));
-    
+    const singles = batting.hits - (batting.doubles + batting.triples + batting.homeRuns);
+
+    score += singles;
     score += batting.doubles * 2;
     score += batting.triples * 3;
     score += batting.homeRuns * 4;
@@ -155,8 +198,8 @@ export function caclulateFantasyPointS(stats){
     score += batting.hitByPitch;
     score -= batting.caughtStealing;
     score -= batting.strikeOuts;
-    score -= (batting.groundIntoDoublePlay * 2);
-    score -= (batting.groundIntoTriplePlay * 3);
+    score -= batting.groundIntoDoublePlay * 2;
+    score -= (batting.groundIntoTriplePlay ?? 0) * 3;
 
     return score;
 }

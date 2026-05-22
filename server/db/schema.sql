@@ -112,6 +112,16 @@ CREATE TABLE discord_server_members (
   UNIQUE(discord_server_id, user_id)
 );
 
+CREATE TABLE scheduled_games (
+    id SERIAL PRIMARY KEY,
+    game_date DATE NOT NULL,
+    game_pk INTEGER NOT NULL,
+    home_team_id INTEGER NOT NULL,
+    away_team_id INTEGER NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(game_date, game_pk)
+);
+
 CREATE INDEX idx_users_discord_id ON users(discord_id);
 CREATE INDEX idx_players_mlb_id ON players(mlb_id);
 CREATE INDEX idx_daily_assignments_user_id ON daily_assignments(user_id);
@@ -119,3 +129,4 @@ CREATE INDEX idx_daily_assignments_assigned_date ON daily_assignments(assigned_d
 CREATE INDEX idx_daily_scores_assignment_id ON daily_scores(assignment_id);
 CREATE INDEX idx_user_achievements_user_id ON user_achievements(user_id);
 CREATE INDEX idx_discord_server_members_user_id ON discord_server_members(user_id);
+CREATE INDEX idx_scheduled_games_game_date ON scheduled_games(game_date);

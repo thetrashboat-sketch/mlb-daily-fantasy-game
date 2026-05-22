@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
 import { getBoxScore } from './services/mlb.js'; //remove this
+import { syncPlayers } from './services/mlb.js'; //remove this
 import { scheduleSyncPlayers } from './services/mlb.js';
 import assignmentRoutes from './routes/assignments.js';
 
@@ -25,7 +26,9 @@ app.get('/health', (req, res) => {
 
 app.use('/api/assignments', assignmentRoutes);
 
+await syncPlayers();
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  getBoxScore(824274); //remove this 
+  //getBoxScore(824274); //remove this 
 });
