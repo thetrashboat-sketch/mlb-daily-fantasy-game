@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
 import { scheduleSyncPlayers } from './services/mlb.js';
-import { syncPlayers, getPlayerRoster, getTeams, getRoster } from './services/mlb.js'; // remove this later
+import assignmentRoutes from './routes/assignments.js';
 
 
 
@@ -21,6 +21,8 @@ app.use('/api/auth', authRoutes);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
+app.use('/api/assignments', assignmentRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

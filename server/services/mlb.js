@@ -17,6 +17,7 @@ export const getPlayerRoster = async () => {
         if (playersData.error) throw new Error(`${playersData.error.message}`);
 
         for (const player of playersData.roster){
+            //ignores pitchers 
             if (player.position.code !== '1'){
                 playersList.push(
                     {
