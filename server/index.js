@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.js';
+import { getBoxScore } from './services/mlb.js'; //remove this
 import { scheduleSyncPlayers } from './services/mlb.js';
 import assignmentRoutes from './routes/assignments.js';
 
@@ -26,5 +27,5 @@ app.use('/api/assignments', assignmentRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  scheduleSyncPlayers();
+  getBoxScore(824274); //remove this 
 });

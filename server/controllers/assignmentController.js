@@ -1,8 +1,9 @@
 import pool from '../db/pool.js';
+import { getGameDate } from '../../shared/gameDate.js';
 
 export async function claimAssignment(req, res) {
     const userId = req.user.id;
-    const today = new Date().toISOString().split('T')[0];
+    const today = getGameDate();
 
     const client = await pool.connect();
 
@@ -67,7 +68,7 @@ export async function claimAssignment(req, res) {
 
 export async function getAssignment(req, res) {
     const userId = req.user.id;
-    const today = new Date().toISOString().split('T')[0];
+    const today = getGameDate();
 
     try{
         const result = await pool.query(

@@ -111,6 +111,56 @@ export function scheduleSyncPlayers() {
   console.log('[cron] Player sync scheduled for 6:00 AM daily');
 }
 
+export async function getBoxScore(gamePk){
+    const bxScoreRes = await fetch(`https://statsapi.mlb.com/api/v1/game/${gamePk}/boxscore`);
+    const bxScoreData = await bxScoreRes.json();
+    const stats = {};
+
+    if (bxScoreData.error) throw new Error(`${bxScoreData.error.message}`);
+
+    const homePlayers = bxScoreData.teams.home.players;
+    const awayPlayers = bxScoreData.teams.away.players;
+
+    for (const [key, value] of Object.entries(awayPlayers)){
+        if (value.position.code !== '1'){
+            stats[value.person.id] = value.stats;
+        }
+    }
+
+    for (const [key, value] of Object.entries(homePlayers)){
+        if (value.position.code !== '1'){
+            stats[value.person.id] = value.stats;
+        }
+    }
+
+    console.log(caclulateFantasyPointS(stats['682177']));
+
+    return stats;
+}
+
+export function caclulateFantasyPointS(stats){
+    let score = 0;
+    const batting = stats.batting;
+
+    //calculate singles
+    score += (batting.hits - (batting.doubles + batting.triples + batting.homeRuns));
+    
+    score += batting.doubles * 2;
+    score += batting.triples * 3;
+    score += batting.homeRuns * 4;
+    score += batting.rbi;
+    score += batting.runs;
+    score += batting.baseOnBalls;
+    score += batting.stolenBases;
+    score += batting.hitByPitch;
+    score -= batting.caughtStealing;
+    score -= batting.strikeOuts;
+    score -= (batting.groundIntoDoublePlay * 2);
+    score -= (batting.groundIntoTriplePlay * 3);
+
+    return score;
+}
+
 export async function getTeams() {
   const response = await fetch(`${BASE_URL}/teams?sportId=1&season=2026`);
   if (!response.ok) throw new Error(`MLB API error: ${response.status}`);
