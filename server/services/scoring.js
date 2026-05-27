@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import pool from '../db/pool.js';
-import { getGameDate } from '../shared/gameDate.js';
+import { getGameDate } from '../../shared/gameDate.js';
 import { getBoxScore, calculateFantasyPoints } from './mlb.js';
 
 const HARD_CUTOFF_HOUR_UTC = 9;
@@ -53,6 +53,8 @@ export async function finalizeScores(dateStr) {
         [date]
     );
 
+    console.log('Assignments:', JSON.stringify(assignments, null, 2)); //remove this 
+
     if (assignments.length === 0) {
         console.log(`[scoring] No unfinalized assignments found for ${date}.`);
         return { finalized: 0, skipped: 0 };
@@ -61,7 +63,7 @@ export async function finalizeScores(dateStr) {
     console.log(`[scoring] Found ${assignments.length} unfinalized assignments.`);
 
     // Fetch box scores once per unique game_pk
-    const uniqueGamePks = [...new Set(assignments.flatMap((a) => a.game_pk))];
+    const uniqueGamePks = [...new Set(assignments.flatMap((a) => a.game_pks))];
     const boxScores = {};
     const skippedGames = new Set();
 
@@ -159,7 +161,7 @@ export async function finalizeScores(dateStr) {
     return { finalized, skipped };
 }
 
-async function mergeStats(statsList){
+function mergeStats(statsList){
     const battingFields = [
         'hits', 'doubles', 'triples', 'homeRuns', 'rbi',
         'runs', 'baseOnBalls', 'stolenBases', 'caughtStealing',
