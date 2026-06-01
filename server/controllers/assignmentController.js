@@ -4,6 +4,7 @@ import { getGameDate } from '../../shared/gameDate.js';
 export async function claimAssignment(req, res) {
     const userId = req.user.id;
     const today = getGameDate();
+    console.log('Today: ', today);
 
     const client = await pool.connect();
 
