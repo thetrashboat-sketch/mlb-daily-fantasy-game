@@ -139,20 +139,6 @@ export async function syncPlayers() {
     }
 }
 
-export function scheduleSyncPlayers() {
-  cron.schedule('0 10 * * *', async () => {
-    console.log('[cron] Running scheduled player sync...');
-    try {
-      const result = await syncPlayers();
-      console.log('[cron] Player sync complete:', result);
-    } catch (err) {
-      console.error('[cron] Player sync failed:', err.message);
-    }
-  });
-
-  console.log('[cron] Player sync scheduled for 10:00 AM daily');
-}
-
 export async function getBoxScore(gamePk){
     const bxScoreRes = await fetch(`${BASE_URL}/game/${gamePk}/boxscore`);
     const bxScoreData = await bxScoreRes.json();

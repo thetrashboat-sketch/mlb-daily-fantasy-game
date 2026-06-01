@@ -178,21 +178,3 @@ function mergeStats(statsList){
 
     return {batting: mergedBatting};
 }
-
-/**
- * Registers the nightly score finalization cron at 8:00 AM UTC.
- * Mirrors the pattern of scheduleSyncPlayers in mlb.js.
- */
-export function scheduleFinalizeScores() {
-    cron.schedule('0 8 * * *', async () => {
-        console.log('[cron] Running nightly score finalization...');
-        try {
-            const result = await finalizeScores();
-            console.log('[cron] Score finalization complete:', result);
-        } catch (err) {
-            console.error('[cron] Score finalization failed:', err.message);
-        }
-    });
-
-    console.log('[cron] Score finalization scheduled for 8:00 AM UTC daily');
-}

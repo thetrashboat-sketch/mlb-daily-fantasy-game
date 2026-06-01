@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import pool from '../db/pool.js';
+import client from '../services/bot.js';
 
 export function redirectToDiscord(req, res){
     const url = `https://discord.com/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(process.env.DISCORD_REDIRECT_URI)}&response_type=code&scope=identify`;
@@ -45,10 +46,32 @@ export async function handleCallback(req, res){
             [discordUser.id, discordUser.username, discordUser.avatar, userId]
         );
 
+        for (const guild of client.guilds.cache.values()){
+            try{
+                const server = await guild.members.fetch(discordUser.id);
+                const serverRes = await pool.query(`
+                    SELECT id FROM discord_servers 
+                    WHERE guild_id = $1
+                    `, [guild.id]);
+
+                if (!serverRes.rows[0]) continue;
+                const serverId = serverRes.rows[0].id;
+
+                await pool.query(`
+                    INSERT INTO discord_server_members(discord_server_id, user_id)
+                    VALUES ($1, $2)
+                    `, [serverId, userId]);
+            } catch(err){
+                console.error(`[discord server] ${err}`);
+                continue;
+            }
+        }
+
         res.json({ success: true });
 
         
     }catch(err){
+        console.error('[discord] error:', err);
         res.status(500).json({ error: 'Discord linking failed' });
     }
 

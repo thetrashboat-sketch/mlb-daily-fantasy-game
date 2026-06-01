@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <form id="form">
+    <input id="username" placeholder="username" />
+    <input id="password" type="password" placeholder="password" />
+    <button type="submit">Login</button>
+  </form>
+  <script>
+    document.getElementById('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) window.location.href = '/api/discord/auth';
+      else alert(data.error);
+    });
+  </script>
+</body>
+</html>
