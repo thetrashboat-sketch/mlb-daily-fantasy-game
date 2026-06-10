@@ -9,6 +9,7 @@ import assignmentRoutes from './routes/assignments.js';
 import discordRoutes from './routes/discord.js';
 import discordClient from './services/bot.js';
 import path from 'path';
+import pool from './db/pool.js';
 
 
 dotenv.config({ path: '../.env' });
@@ -30,6 +31,30 @@ app.get('/health', (req, res) => {
 
 app.use('/api/assignments', assignmentRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+async function start(){
+  try{
+    //verify DB
+    const client = await pool.connect();
+    client.release();
+    console.log("DB connection verified");
+
+    //login bot and wait for ready 
+    await new Promise((resolve, reject) => {
+      discordClient.once('ready', resolve);
+      discordClient.once('error', reject);
+      discordClient.login(process.env.DISCORD_BOT_TOKEN);
+    });
+
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+  } catch(err){
+      console.error('Startup Failed:', err);
+      process.exit(1);
+  }
+}
+
+start();
+
+

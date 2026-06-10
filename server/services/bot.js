@@ -19,6 +19,4 @@ client.on('guildCreate', async (guild) => {
     console.log(`Registered server: ${guild.name}`);
 });
 
-client.login(process.env.DISCORD_BOT_TOKEN);
-
 export default client;
