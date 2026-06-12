@@ -33,90 +33,37 @@ export async function finalizeScores(dateStr) {
 
     console.log(`[scoring] Starting score finalization for ${date}...`);
 
-    // Fetch all unfinalized assignments for the date, with player mlb_id and game_pk
-    const { rows: assignments } = await pool.query(
-        `SELECT
-            da.id            AS assignment_id,
-            da.user_id,
-            p.mlb_id,
-            array_agg(sg.game_pk) AS game_pks,
-            u.next_day_multiplier
-        FROM daily_assignments da
-        JOIN players p             ON p.id = da.player_id
-        JOIN scheduled_games sg    ON sg.game_date = da.assigned_date
-                                   AND (sg.home_team_id = p.team_id OR sg.away_team_id = p.team_id)
-        JOIN users u               ON u.id = da.user_id
-        LEFT JOIN daily_scores ds  ON ds.assignment_id = da.id
-        WHERE da.assigned_date = $1
-          AND (ds.is_finalized IS NULL OR ds.is_finalized = FALSE)
-        GROUP BY da.id, da.user_id, p.mlb_id, u.next_day_multiplier`,
-        [date]
-    );
+    const liveScores = await getLiveScoresForDate(date);
 
-    console.log('Assignments:', JSON.stringify(assignments, null, 2)); //remove this 
-
-    if (assignments.length === 0) {
-        console.log(`[scoring] No unfinalized assignments found for ${date}.`);
+    if (liveScores.length === 0) {
+        console.log(`[scoring] No assignments found for ${date}.`);
         return { finalized: 0, skipped: 0 };
     }
 
-    console.log(`[scoring] Found ${assignments.length} unfinalized assignments.`);
+    console.log(`[scoring] Found ${liveScores.length} assignments.`);
 
-    // Fetch box scores once per unique game_pk
-    const uniqueGamePks = [...new Set(assignments.flatMap((a) => a.game_pks))];
-    const boxScores = {};
-    const skippedGames = new Set();
-
-    for (const gamePk of uniqueGamePks) {
-        try {
-            // Verify the game is final before pulling the box score
-            const scheduleRes = await fetch(
-                `https://statsapi.mlb.com/api/v1/schedule?sportId=1&gamePk=${gamePk}`
-            );
-            const scheduleData = await scheduleRes.json();
-            const gameStatus = scheduleData.dates?.[0]?.games?.[0]?.status?.abstractGameState;
-
-            if (gameStatus !== 'Final') {
-                console.warn(`[scoring] Game ${gamePk} is not final (status: ${gameStatus}). Skipping.`);
-                skippedGames.add(gamePk);
-                continue;
-            }
-
-            boxScores[gamePk] = await getBoxScore(gamePk);
-        } catch (err) {
-            console.error(`[scoring] Failed to fetch box score for game ${gamePk}:`, err.message);
-            skippedGames.add(gamePk);
-        }
-    }
+    // Fetch next_day_multiplier for each user
+    const userIds = [...new Set(liveScores.map(r => r.user_id))];
+    const { rows: userRows } = await pool.query(
+        `SELECT id, next_day_multiplier FROM users WHERE id = ANY($1)`,
+        [userIds]
+    );
+    const multiplierMap = Object.fromEntries(userRows.map(u => [u.id, u.next_day_multiplier]));
 
     let finalized = 0;
     let skipped = 0;
 
-    for (const assignment of assignments) {
-        const { assignment_id, user_id, mlb_id, game_pk, next_day_multiplier } = assignment;
+    for (const row of liveScores) {
+        const { assignment_id, user_id, points, playerPlayed, game_pks } = row;
 
-        if (skippedGames.has(game_pk)) {
-            skipped++;
-            continue;
-        }
-
-        const statsList = assignment.game_pks.map((gamePk) => boxScores[gamePk]?.[mlb_id]);
-        const playerStats = mergeStats(statsList);
-        const playerPlayed = playerStats != null &&
-            playerStats.batting != null &&
-            Object.keys(playerStats.batting).length > 0;
-
-        const rawPoints = playerPlayed ? calculateFantasyPoints(playerStats) : 0;
-
-        // Multiplier only applies when the player does NOT play
-        const multiplierToApply = playerPlayed ? 1 : next_day_multiplier;
-        const fantasyPoints = rawPoints * multiplierToApply;
+        const next_day_multiplier = multiplierMap[user_id] ?? 1;
+        const multiplierToApply = playerPlayed ? next_day_multiplier : 1;
+        const fantasyPoints = points * multiplierToApply;
 
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
 
-            // Write or update the score row
             await client.query(
                 `INSERT INTO daily_scores (
                     assignment_id,
@@ -133,9 +80,6 @@ export async function finalizeScores(dateStr) {
                 [assignment_id, fantasyPoints, multiplierToApply, playerPlayed]
             );
 
-            // Update the user's next_day_multiplier:
-            // - Player played (regardless of points): reset to 1
-            // - Player did not play: increment by 1
             await client.query(
                 `UPDATE users
                  SET next_day_multiplier = CASE
@@ -161,9 +105,65 @@ export async function finalizeScores(dateStr) {
     return { finalized, skipped };
 }
 
+export async function getLiveScoresForDate(dateStr){
+    const date = dateStr ?? getGameDate();
+
+    const { rows: assignments } = await pool.query(`
+        SELECT
+            da.id AS assignment_id,
+            da.user_id,
+            u.discord_id,
+            u.username,
+            p.mlb_id,
+            p.full_name AS player_name,
+            array_agg(sg.game_pk) AS game_pks
+        FROM daily_assignments da
+        JOIN players p ON p.id = da.player_id
+        JOIN scheduled_games sg ON sg.game_date = da.assigned_date
+                                AND (sg.home_team_id = p.team_id OR sg.away_team_id = p.team_id)
+        JOIN users u ON u.id = da.user_id
+        WHERE da.assigned_date = $1
+        GROUP BY da.id, da.user_id, u.discord_id, u.username, p.mlb_id, p.full_name 
+        `, [date]);
+        
+    if (assignments.length === 0) return [];
+
+    const uniqueGamePks = [...new Set(assignments.flatMap(a => a.game_pks))];
+    const boxScores = {};
+
+    for (const gamePk of uniqueGamePks) {
+        try {
+            boxScores[gamePk] = await getBoxScore(gamePk);
+        } catch (err) {
+            console.error(`[scoring] Failed to fetch box score for game ${gamePk}:`, err.message);
+        }
+    }
+
+    return assignments.map(a => {
+        const statsList = a.game_pks.map(pk => boxScores[pk]?.[a.mlb_id]);
+        const stats = mergeStats(statsList);
+        const playerPlayed = stats.batting.atBats > 0 ||
+            stats.batting.baseOnBalls > 0 ||
+            stats.batting.hitByPitch > 0;
+        const points = playerPlayed ? calculateFantasyPoints(stats) : 0;
+
+        return {
+            assignment_id: a.assignment_id,
+            user_id: a.user_id,
+            discord_id: a.discord_id,
+            username: a.username,
+            player_name: a.player_name,
+            game_pks: a.game_pks,
+            points,
+            playerPlayed
+        };
+    });
+
+}
+
 function mergeStats(statsList){
     const battingFields = [
-        'hits', 'doubles', 'triples', 'homeRuns', 'rbi',
+        'atBats','hits', 'doubles', 'triples', 'homeRuns', 'rbi',
         'runs', 'baseOnBalls', 'stolenBases', 'caughtStealing',
         'strikeOuts', 'hitByPitch', 'groundIntoDoublePlay', 'groundIntoTriplePlay'
     ];
@@ -172,7 +172,7 @@ function mergeStats(statsList){
     
     for (const field of battingFields) {
         mergedBatting[field] = statsList.reduce((sum, stats) => {
-            return sum + (stats.batting?.[field] ?? 0);
+            return sum + (stats?.batting?.[field] ?? 0);
         }, 0);
     }
 

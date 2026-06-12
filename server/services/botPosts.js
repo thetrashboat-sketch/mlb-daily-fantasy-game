@@ -11,7 +11,7 @@ export async function postPicksOpen (){
 
         for (const server of servRes.rows){
             const channel = await client.channels.fetch(server.channel_id);
-            channel.send({
+            await channel.send({
                 content: `⚾ Player selection is now open! Head over to pick your hitter for today: ${process.env.FRONTEND_URL}`,
                 flags: [4096]
             });
@@ -61,12 +61,15 @@ export async function postMiddayUpdate(){
                 postMessage += `<@${user.discord_username}> → ${user.player_name} (${user.team_abbr} - ${user.position})\n`
             }
 
-            postMessage += 'Still Need to Pick: '
-            for (const user of unpicked){
-                postMessage += `<@${user.discord_username}> `;
+            if (unpicked.length > 0) {
+                postMessage += 'Still Need to Pick: '
+                for (const user of unpicked) {
+                    postMessage += `<@${user.discord_id}> `;
+                }
+                postMessage += `\nMake your pick here: ${process.env.FRONTEND_URL}`;
+            } else {
+                postMessage += `Make your pick here: ${process.env.FRONTEND_URL}`;
             }
-
-            postMessage += `\nMake your pick here: ${process.env.FRONTEND_URL}`;
 
             await channel.send({
                 content: postMessage

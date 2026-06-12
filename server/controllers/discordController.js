@@ -60,6 +60,7 @@ export async function handleCallback(req, res){
                 await pool.query(`
                     INSERT INTO discord_server_members(discord_server_id, user_id)
                     VALUES ($1, $2)
+                    ON CONFLICT (discord_server_id, user_id) DO NOTHING
                     `, [serverId, userId]);
             } catch(err){
                 console.error(`[discord server] ${err}`);

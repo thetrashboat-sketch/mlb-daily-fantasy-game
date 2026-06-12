@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import { finalizeScores } from './scoring.js';
 import { syncPlayers } from './mlb.js';
-import { postPicksOpen } from './botPosts.js';
+import { postPicksOpen, postMiddayUpdate } from './botPosts.js';
 
 cron.schedule('0 8 * * *', async () => {
     console.log('[cron] Running nightly score finalization...');
@@ -33,6 +33,15 @@ cron.schedule('10 10 * * *', async () => {
         await postPicksOpen();
     } catch(err){
         console.error('[cron] Morning post failed:', err.message);
+    }
+}, {timezone: 'UTC'});
+
+cron.schedule('0 18 * * *', async () => {
+    console.log('[cron] Running Scheduled midday post');
+    try{
+        await postMiddayUpdate();
+    } catch(err){
+        console.error('[cron] Midday post failed: ', err.message);
     }
 }, {timezone: 'UTC'});
 
