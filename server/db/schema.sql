@@ -2,16 +2,14 @@
 -- Database schema
 -- Run: psql -U youruser -d yourdbname -f server/db/schema.sql
 
-DROP TABLE IF EXISTS discord_server_members CASCADE;
 DROP TABLE IF EXISTS user_achievements CASCADE;
 DROP TABLE IF EXISTS daily_scores CASCADE;
 DROP TABLE IF EXISTS daily_assignments CASCADE;
 DROP TABLE IF EXISTS achievements CASCADE;
-DROP TABLE IF EXISTS discord_servers CASCADE;
 DROP TABLE IF EXISTS players CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS scheduled_games CASCADE;
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id                  SERIAL PRIMARY KEY,
   username            VARCHAR(50)  NOT NULL UNIQUE,
   email               VARCHAR(255) UNIQUE,
@@ -41,7 +39,7 @@ CREATE TABLE players (
   updated_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE discord_servers (
+CREATE TABLE IF NOT EXISTS discord_servers (
   id          SERIAL PRIMARY KEY,
   guild_id    VARCHAR(50)  NOT NULL UNIQUE,
   guild_name  VARCHAR(100) NOT NULL,
@@ -76,6 +74,7 @@ CREATE TABLE daily_scores (
   hit_by_pitch       INTEGER      NOT NULL DEFAULT 0,
   gidp               INTEGER      NOT NULL DEFAULT 0,
   left_on_base       INTEGER      NOT NULL DEFAULT 0,
+  stat_summary       VARCHAR(100),
   fantasy_points     DECIMAL(8,2) NOT NULL DEFAULT 0,
   multiplier_applied DECIMAL(4,2) NOT NULL DEFAULT 1.0,
   player_played      BOOLEAN      NOT NULL DEFAULT FALSE,
@@ -104,7 +103,7 @@ CREATE TABLE user_achievements (
   earned_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE discord_server_members (
+CREATE TABLE IF NOT EXISTS discord_server_members (
   id                SERIAL PRIMARY KEY,
   discord_server_id INTEGER     NOT NULL REFERENCES discord_servers(id),
   user_id           INTEGER     NOT NULL REFERENCES users(id),
@@ -122,11 +121,11 @@ CREATE TABLE scheduled_games (
     UNIQUE(game_date, game_pk)
 );
 
-CREATE INDEX idx_users_discord_id ON users(discord_id);
+CREATE INDEX IF NOT EXISTS idx_users_discord_id ON users(discord_id);
 CREATE INDEX idx_players_mlb_id ON players(mlb_id);
 CREATE INDEX idx_daily_assignments_user_id ON daily_assignments(user_id);
 CREATE INDEX idx_daily_assignments_assigned_date ON daily_assignments(assigned_date);
 CREATE INDEX idx_daily_scores_assignment_id ON daily_scores(assignment_id);
 CREATE INDEX idx_user_achievements_user_id ON user_achievements(user_id);
-CREATE INDEX idx_discord_server_members_user_id ON discord_server_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_discord_server_members_user_id ON discord_server_members(user_id);
 CREATE INDEX idx_scheduled_games_game_date ON scheduled_games(game_date);

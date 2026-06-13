@@ -54,7 +54,8 @@ export async function finalizeScores(dateStr) {
     let skipped = 0;
 
     for (const row of liveScores) {
-        const { assignment_id, user_id, points, playerPlayed, game_pks } = row;
+        const { assignment_id, user_id, points, playerPlayed, game_pks, stats } = row;
+        const statSummary = playerPlayed ? (stats?.batting?.summary ?? null) : null;
 
         const next_day_multiplier = multiplierMap[user_id] ?? 1;
         const multiplierToApply = playerPlayed ? next_day_multiplier : 1;
@@ -70,14 +71,16 @@ export async function finalizeScores(dateStr) {
                     fantasy_points,
                     multiplier_applied,
                     player_played,
+                    stat_summary,
                     is_finalized
-                ) VALUES ($1, $2, $3, $4, TRUE)
+                ) VALUES ($1, $2, $3, $4, $5, TRUE)
                 ON CONFLICT (assignment_id) DO UPDATE SET
                     fantasy_points     = EXCLUDED.fantasy_points,
                     multiplier_applied = EXCLUDED.multiplier_applied,
                     player_played      = EXCLUDED.player_played,
+                    stat_summary       = EXCLUDED.stat_summary,
                     is_finalized       = TRUE`,
-                [assignment_id, fantasyPoints, multiplierToApply, playerPlayed]
+                [assignment_id, fantasyPoints, multiplierToApply, playerPlayed, statSummary]
             );
 
             await client.query(
@@ -115,7 +118,7 @@ export async function getLiveScoresForDate(dateStr){
             u.discord_id,
             u.username,
             p.mlb_id,
-            p.full_name AS player_name,
+            p.name AS player_name,
             array_agg(sg.game_pk) AS game_pks
         FROM daily_assignments da
         JOIN players p ON p.id = da.player_id
