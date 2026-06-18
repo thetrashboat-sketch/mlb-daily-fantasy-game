@@ -1,12 +1,14 @@
 import { Client, GatewayIntentBits } from 'discord.js';
+import { registerCommands } from './registerCommands.js';
 import pool from '../db/pool.js';
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages]
 });
 
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log(`Bot online: ${client.user.tag}`);
+    await registerCommands(process.env.DISCORD_CLIENT_ID);
 });
 
 client.on('guildCreate', async (guild) => {
@@ -51,6 +53,40 @@ client.on('guildMemberAdd', async (member) => {
         console.error('[member add] ', err.message);
     }
     
+});
+
+client.on('interactionCreate', async(interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+        if (interaction.commandName === 'setchannel') {
+            if (!interaction.memberPermissions.has('ManageChannels')) {
+                await interaction.reply({
+                    content: '❌ You need the **Manage Channels** permission to use this command.',
+                    ephemeral: true
+                });
+                return;
+            }
+
+            try {
+                await pool.query(`
+                    UPDATE discord_servers
+                    SET channel_id = $1
+                    WHERE guild_id = $2
+                `, [interaction.channelId, interaction.guildId]);
+
+                await interaction.reply({
+                    content: '✅ Got it! Daily Dinger updates will now be posted in this channel.',
+                    ephemeral: true
+                });
+
+                await interaction.channel.send('✅ This channel has been set for Daily Dinger bot updates!');
+            } catch (err) {
+                console.error('[setchannel]', err.message);
+                await interaction.reply({
+                    content: '❌ Something went wrong. Please try again.',
+                    ephemeral: true
+                });
+            }
+        }
 });
 
 export default client;
