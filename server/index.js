@@ -6,6 +6,7 @@ import './services/scheduler.js';
 import authRoutes from './routes/auth.js';
 import leaderBoardRouter from './routes/leaderboard.js'
 import assignmentRoutes from './routes/assignments.js';
+import userRouter from './routes/users.js';
 import discordRoutes from './routes/discord.js';
 import discordClient from './services/bot.js';
 import path from 'path';
@@ -23,6 +24,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRoutes);
 app.use('/api/leaderboard', leaderBoardRouter);
 app.use('/api/discord', discordRoutes);
+app.use('/api/users', userRouter);
 app.use(express.static(process.cwd()));
 
 app.get('/health', (req, res) => {

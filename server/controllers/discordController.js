@@ -13,7 +13,7 @@ export async function handleCallback(req, res){
         const userId = decoded.id;
 
         const { code } = req.query;
-        if (!code) return res.status(400).json({ error: 'No code provided' });
+        if (!code) return res.redirect(`${process.env.FRONTEND_URL}profile?discord=denied`);
 
         const params = new URLSearchParams({
             client_id: process.env.DISCORD_CLIENT_ID,
@@ -68,12 +68,12 @@ export async function handleCallback(req, res){
             }
         }
 
-        res.json({ success: true });
+        res.redirect(`${process.env.FRONTEND_URL}profile?discord=linked`);
 
         
     }catch(err){
         console.error('[discord] error:', err);
-        res.status(500).json({ error: 'Discord linking failed' });
+        res.redirect(`${process.env.FRONTEND_URL}profile?discord=error`);
     }
 
 

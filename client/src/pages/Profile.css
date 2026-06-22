@@ -1,0 +1,126 @@
+.profile-page {
+  flex: 1;
+  padding: 40px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.profile-card {
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  padding: 40px;
+}
+
+.profile-username {
+  font-size: 36px;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.profile-joined {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+}
+
+.profile-stats {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--border);
+}
+
+.stat-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.profile-section {
+  margin-bottom: 28px;
+}
+
+.profile-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 18px;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.discord-status {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.discord-status.linked {
+  color: var(--positive);
+}
+
+.link-discord-btn {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 20px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.link-discord-btn:hover {
+  background-color: var(--border);
+}
+
+.achievements-placeholder {
+  font-size: 14px;
+}
+
+.profile-error {
+  color: var(--negative);
+  text-align: center;
+  padding-top: 40px;
+}
+
+.discord-banner {
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.discord-banner.success {
+  color: var(--positive);
+  border-color: var(--positive);
+}
+
+.discord-banner.info {
+  color: var(--text-muted);
+}
+
+.discord-banner.error {
+  color: var(--negative);
+  border-color: var(--negative);
+}

@@ -1,0 +1,92 @@
+.how-it-works-page {
+  flex: 1;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+  width: 100%;
+}
+
+.hiw-title {
+  font-size: 40px;
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.hiw-section {
+  margin-bottom: 36px;
+}
+
+.hiw-section h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.hiw-section p {
+  font-size: 15px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.scoring-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  margin-top: 16px;
+}
+
+.scoring-table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.scoring-table td {
+  padding: 10px 20px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.scoring-table tr:last-child td {
+  border-bottom: none;
+}
+
+.scoring-table th:last-child,
+.scoring-table td:last-child {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.scoring-table td.positive {
+  color: var(--positive);
+}
+
+.scoring-table td.negative {
+  color: var(--negative);
+}
+
+.link-discord-btn {
+  background-color: var(--accent);
+  color: var(--bg);
+  border: none;
+  padding: 12px 24px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  margin-top: 16px;
+}
+
+.link-discord-btn:hover {
+  opacity: 0.9;
+}
