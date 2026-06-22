@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 import pool from '../db/pool.js';
+import { getGameDate } from '../../shared/gameDate.js';
 
 const BASE_URL = 'https://statsapi.mlb.com/api/v1';
 
@@ -124,7 +125,7 @@ export async function syncPlayers() {
         );
 
         // Sync today's scheduled games in the same transaction
-        const today = new Date().toISOString().split('T')[0];
+        const today = getGameDate();
         const gamesCount = await syncScheduledGames(today, client);
 
         await client.query('COMMIT');
