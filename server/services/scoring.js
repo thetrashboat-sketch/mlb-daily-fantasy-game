@@ -54,12 +54,15 @@ export async function finalizeScores(dateStr) {
     let skipped = 0;
 
     for (const row of liveScores) {
-        const { assignment_id, user_id, points, playerPlayed, game_pks, stats } = row;
-        const statSummary = playerPlayed ? (stats?.batting?.summary ?? null) : null;
+        const { assignment_id, user_id, points, playerPlayed, game_pks, stat_summary } = row;
 
+        console.log(row);
         const next_day_multiplier = multiplierMap[user_id] ?? 1;
         const multiplierToApply = playerPlayed ? next_day_multiplier : 1;
         const fantasyPoints = points * multiplierToApply;
+        const stat_summary_final = stat_summary === '' ? 'DNP' : stat_summary;
+
+        console.log(stat_summary);
 
         const client = await pool.connect();
         try {
@@ -80,7 +83,7 @@ export async function finalizeScores(dateStr) {
                     player_played      = EXCLUDED.player_played,
                     stat_summary       = EXCLUDED.stat_summary,
                     is_finalized       = TRUE`,
-                [assignment_id, fantasyPoints, multiplierToApply, playerPlayed, statSummary]
+                [assignment_id, fantasyPoints, multiplierToApply, playerPlayed, stat_summary_final]
             );
 
             await client.query(
@@ -126,7 +129,7 @@ export async function getLiveScoresForDate(dateStr){
                                 AND (sg.home_team_id = p.team_id OR sg.away_team_id = p.team_id)
         JOIN users u ON u.id = da.user_id
         WHERE da.assigned_date = $1
-        GROUP BY da.id, da.user_id, u.discord_id, u.username, p.mlb_id, p.full_name 
+        GROUP BY da.id, da.user_id, u.discord_id, u.username, p.mlb_id, p.name 
         `, [date]);
         
     if (assignments.length === 0) return [];
@@ -158,7 +161,8 @@ export async function getLiveScoresForDate(dateStr){
             player_name: a.player_name,
             game_pks: a.game_pks,
             points,
-            playerPlayed
+            playerPlayed,
+            stat_summary: stats?.batting?.summary
         };
     });
 
@@ -178,6 +182,12 @@ function mergeStats(statsList){
             return sum + (stats?.batting?.[field] ?? 0);
         }, 0);
     }
+
+    const summaries = statsList
+        .map(stats => stats?.batting?.summary)
+        .filter(Boolean);
+
+    mergedBatting.summary = summaries.join(' | ');
 
     return {batting: mergedBatting};
 }

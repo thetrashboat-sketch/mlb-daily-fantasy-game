@@ -5,12 +5,13 @@
   --bg:         #0F1923;
   --surface:    #1C2B38;
   --surface-2:  #243444;
-  --accent:     #E8C547;
+  --accent:     var(--theme-primary, #E8C547);
   --text:       #FFFFFF;
   --text-muted: #8B9DAD;
   --positive:   #2ECC71;
   --negative:   #E74C3C;
   --border:     #2A3F52;
+  --accent-secondary: var(--theme-secondary, #8B9DAD);
 
   --font-display: 'Bebas Neue', sans-serif;
   --font-body:    'Inter', sans-serif;

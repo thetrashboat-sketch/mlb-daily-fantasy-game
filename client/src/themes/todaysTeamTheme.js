@@ -17,6 +17,7 @@ export function getTodaysTeamTheme() {
   const dateStr = getGameDate();
   const teamCodes = Object.keys(teamThemes);
   const index = hashString(dateStr) % teamCodes.length;
-  const teamCode = teamCodes[index];
+  //const teamCode = teamCodes[index];
+  const teamCode = 'STL';
   return { teamCode, ...teamThemes[teamCode] };
 }

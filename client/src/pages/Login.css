@@ -11,6 +11,7 @@
   max-width: 400px;
   background-color: var(--surface);
   border: 1px solid var(--border);
+  border-top: 4px solid var(--accent);
   padding: 40px;
 }
 
@@ -34,7 +35,7 @@
 
 .login-toggle {
   display: flex;
-  border: 1px solid var(--border);
+  border: 1px solid var(--accent-secondary);
   margin-bottom: 28px;
 }
 
@@ -53,6 +54,11 @@
 
 .toggle-btn.active {
   background-color: var(--accent);
+  color: var(--bg);
+}
+
+.toggle-btn:not(.active){
+  background-color: var(--accent-secondary);
   color: var(--bg);
 }
 
@@ -100,7 +106,7 @@
 }
 
 .field input:focus {
-  border-color: var(--accent);
+  border-color: var(--accent-secondary);
 }
 
 .login-error {
