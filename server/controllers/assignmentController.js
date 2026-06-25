@@ -1,5 +1,6 @@
 import pool from '../db/pool.js';
 import { getGameDate } from '../../shared/gameDate.js';
+import { getBoxScore, getSeasonStats } from '../services/mlb.js';
 
 export async function claimAssignment(req, res) {
     const userId = req.user.id;
@@ -9,6 +10,8 @@ export async function claimAssignment(req, res) {
     const client = await pool.connect();
 
     try {
+        await client.query('BEGIN');
+
         //check if user already has an assigned hitter for today 
         const existing = await client.query(
             `SELECT da.id, p.name, p.team_abbr, p.position, p.headshot_url
@@ -25,7 +28,8 @@ export async function claimAssignment(req, res) {
 
         //pick a random active hitter 
         const playerResult = await client.query(
-            `SELECT p.id, p.name, p.team_id, p.team_name, p.team_abbr, p.position, p.headshot_url
+            `SELECT p.id, p.name, p.team_id, p.team_name, p.team_abbr, p.position, p.headshot_url,
+            p.mlb_id
             FROM players p
             JOIN scheduled_games sg
                 ON p.team_id = sg.home_team_id OR p.team_id = sg.away_team_id 
@@ -42,13 +46,35 @@ export async function claimAssignment(req, res) {
 
         const player = playerResult.rows[0];
 
+        //fetch season stats — best effort, claim should succeed even if this fails
+        let seasonStats = null;
+        try {
+            seasonStats = await getSeasonStats(player.mlb_id);
+        } catch (err) {
+            console.error('[claimAssignment] season stats fetch failed:', err.message);
+        }
+
         //store the assignment 
         const assignment = await client.query(
-            `INSERT INTO daily_assignments(user_id, player_id, assigned_date)
-            VALUES ($1, $2, $3)
+            `INSERT INTO daily_assignments(
+                user_id, player_id, assigned_date,
+                season_ab, season_h, season_hr, season_rbi, season_r, season_ops)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING id, assigned_date, claimed_at`,
-            [userId, player.id, today]
+            [
+                userId, 
+                player.id, 
+                today,
+                seasonStats?.atBats ?? null,
+                seasonStats?.hits ?? null,
+                seasonStats?.homeRuns ?? null,
+                seasonStats?.rbi ?? null,
+                seasonStats?.runs ?? null,
+                seasonStats?.ops ?? null,
+            ]
         );
+
+        await client.query('COMMIT');
 
         res.status(201).json({
             assignment_id: assignment.rows[0].id,
@@ -79,6 +105,7 @@ export async function getAssignment(req, res) {
     try{
         const result = await pool.query(
             `SELECT da.id, da.assigned_date, da.claimed_at,
+            da.season_ab, da.season_h, da.season_hr, da.season_rbi, da.season_r, da.season_ops,
             p.name, p.team_name, p.team_id, p.team_abbr, p.position, p.headshot_url
             FROM daily_assignments da
             JOIN players p ON p.id = da.player_id
@@ -92,16 +119,24 @@ export async function getAssignment(req, res) {
 
     const row = result.rows[0];
     res.json({
-    assignment_id: row.id,
-    assigned_date: row.assigned_date,
-    claimed_at: row.claimed_at,
+        assignment_id: row.id,
+        assigned_date: row.assigned_date,
+        claimed_at: row.claimed_at,
         player: {
             name: row.name,
-            team: row.team,
+            team: row.team_name,
             team_abbr: row.team_abbr,
             position: row.position,
             headshot_url: row.headshot_url,
         },
+        season_stats: row.season_ab !== null ? {
+            ab: row.season_ab,
+            h: row.season_h,
+            hr: row.season_hr,
+            rbi: row.season_rbi,
+            r: row.season_r,
+            ops: row.season_ops,
+        } : null,
     });
 
     } catch(err){
@@ -109,4 +144,57 @@ export async function getAssignment(req, res) {
         res.status(500).json({ error: 'Server error' });   
     }
 
+}
+
+export async function getAssignmentStats(req, res) {
+    const userId = req.user.id;
+    const today = getGameDate();
+
+    try{
+        const result = await pool.query(`
+            SELECT p.mlb_id AS player_id, p.team_id, sg.game_pk
+            FROM daily_assignments da
+            JOIN players p ON p.id = da.player_id
+            JOIN scheduled_games sg
+                ON sg.game_date = da.assigned_date
+                AND (p.team_id = sg.home_team_id OR p.team_id = sg.away_team_id)
+            WHERE da.user_id = $1 AND da.assigned_date = $2
+            `, [userId, today]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'No assignment or game found for today' });
+        }
+
+        const { player_id, game_pk } = result.rows[0];
+
+        const boxScoreStats = await getBoxScore(game_pk);
+        const playerStats = boxScoreStats[player_id];
+
+        if (!playerStats) {
+            return res.status(404).json({ error: 'Stats not yet available for this player' });
+        }
+
+        const battingStats = playerStats.batting;
+
+        if (battingStats.atBats === undefined) {
+            return res.status(404).json({ error: 'No plate appearances yet today' });
+        }
+
+        const avg = battingStats.atBats > 0 ? (battingStats.hits / battingStats.atBats).toFixed(3).replace(/^0/, '') : '.---';
+
+        res.json({ 
+            stats: {
+                ab: battingStats.atBats,
+                h: battingStats.hits,
+                hr: battingStats.homeRuns,
+                rbi: battingStats.rbi,
+                r: battingStats.runs,
+                avg,  
+            },
+        });
+
+    } catch(err){
+        console.error('[getAssignmentStats]', err.message);
+        res.status(500).json({ error: 'Server error' });
+    }
 }

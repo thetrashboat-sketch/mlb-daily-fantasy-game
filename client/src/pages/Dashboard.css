@@ -1,24 +1,31 @@
 .dashboard-page {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   padding: 40px 24px;
+  gap: 4px;
 }
 
 .claim-prompt {
   text-align: center;
   max-width: 400px;
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  padding: 40px 36px;
 }
 
 .claim-prompt h2 {
-  font-size: 28px;
-  margin-bottom: 8px;
+  font-size: 24px;
+  margin-bottom: 10px;
 }
 
 .claim-prompt p {
+  font-family: var(--font-mono);
   margin-bottom: 24px;
-  font-size: 15px;
+  font-size: 14px;
+  text-transform: none;
 }
 
 .claim-btn {
@@ -27,8 +34,10 @@
   border: none;
   padding: 14px 32px;
   font-family: var(--font-display);
-  font-size: 22px;
-  letter-spacing: 0.06em;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: opacity 0.15s ease;
 }
@@ -68,14 +77,18 @@
 
 .player-name {
   font-size: 32px;
+  font-weight: 600;
   margin-bottom: 6px;
-  color: var(--accent);
+  color: var(--text);
+  letter-spacing: 0.01em;
 }
 
 .player-meta {
+  font-family: var(--font-mono);
   font-size: 14px;
   color: var(--text-muted);
   letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 .dashboard-error {
@@ -83,4 +96,77 @@
   font-size: 14px;
   margin-top: 16px;
   text-align: center;
+}
+
+.pick-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+  text-align: left;
+  width: 100%;
+  max-width: 480px;
+}
+
+.grid-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 20px;
+  margin-bottom: 8px;
+  width: 100%;
+  max-width: 480px;
+  text-align: left;
+}
+
+.stat-box {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 480px;
+}
+
+.stat-cell {
+  border-right: 1px solid var(--border);
+  padding: 14px 10px;
+  text-align: center;
+}
+
+.stat-cell:last-child {
+  border-right: none;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.stat-key {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.stat-placeholder {
+  border: 1px solid var(--border);
+  background-color: var(--surface);
+  padding: 20px;
+  text-align: center;
+  width: 100%;
+  max-width: 480px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }

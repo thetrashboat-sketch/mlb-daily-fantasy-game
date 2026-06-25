@@ -1,21 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&family=Inter+Tight:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 /* ── CSS Variables ── */
 :root {
-  --bg:         #0F1923;
-  --surface:    #1C2B38;
-  --surface-2:  #243444;
-  --accent:     var(--theme-primary, #E8C547);
-  --text:       #FFFFFF;
-  --text-muted: #8B9DAD;
-  --positive:   #2ECC71;
-  --negative:   #E74C3C;
-  --border:     #2A3F52;
-  --accent-secondary: var(--theme-secondary, #8B9DAD);
+  --bg:         #1C1E1D;
+  --surface:    #2B2E2C;
+  --surface-2:  #343733;
+  --accent:     #B5482D;
+  --text:       #E9E4D6;
+  --text-muted: #8A8676;
+  --positive:   #4C6B52;
+  --negative:   #B5482D;
+  --border:     #3C3A30;
+  --accent-secondary: #DCD5C2;
 
-  --font-display: 'Bebas Neue', sans-serif;
-  --font-body:    'Inter', sans-serif;
-  --font-mono:    'Inter Tight', monospace;
+  --font-display: 'Oswald', sans-serif;
+  --font-body:    'Oswald', sans-serif;
+  --font-mono:    'IBM Plex Mono', monospace;
 }
 
 /* ── Reset ── */
@@ -50,6 +50,7 @@ h1, h2, h3, h4 {
   font-family: var(--font-display);
   letter-spacing: 0.04em;
   color: var(--text);
+  text-transform: uppercase;
 }
 
 p, span, label, li {

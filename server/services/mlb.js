@@ -158,8 +158,6 @@ export async function getBoxScore(gamePk){
         }
     }
 
-    //console.log(calculateFantasyPoints(stats['682177']));
-
     return stats;
 }
 
@@ -189,6 +187,31 @@ export function calculateFantasyPoints(stats){
     score -= (batting.groundIntoTriplePlay ?? 0) * 3;
 
     return score;
+}
+
+export async function getSeasonStats(mlbId) {
+    const season = new Date().getFullYear();
+    const statsRes = await fetch(`${BASE_URL}/people/${mlbId}/stats?stats=season&group=hitting&season=${season}`);
+    const statsData = await statsRes.json();
+
+    if (statsData.error) throw new Error(`${statsData.error.message}`);
+
+    const splits = statsData.stats?.[0]?.splits;
+
+    if (!splits || splits.length === 0) {
+        return null;
+    }
+
+    const s = splits[0].stat;
+
+    return {
+        atBats: s.atBats,
+        hits: s.hits,
+        homeRuns: s.homeRuns,
+        rbi: s.rbi,
+        runs: s.runs,
+        ops: s.ops,
+    };
 }
 
 export async function getTeams() {

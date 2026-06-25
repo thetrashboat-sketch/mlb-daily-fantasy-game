@@ -56,13 +56,10 @@ export async function finalizeScores(dateStr) {
     for (const row of liveScores) {
         const { assignment_id, user_id, points, playerPlayed, game_pks, stat_summary } = row;
 
-        console.log(row);
         const next_day_multiplier = multiplierMap[user_id] ?? 1;
         const multiplierToApply = playerPlayed ? next_day_multiplier : 1;
         const fantasyPoints = points * multiplierToApply;
         const stat_summary_final = stat_summary === '' ? 'DNP' : stat_summary;
-
-        console.log(stat_summary);
 
         const client = await pool.connect();
         try {
