@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { finalizeScores } from './scoring.js';
 import { syncPlayers } from './mlb.js';
 import { postPicksOpen, postMiddayUpdate, postEveningUpdate } from './botPosts.js';
+import { refreshNews } from './news.js';
 
 cron.schedule('0 4 * * *', async () => {
    console.log('[cron] Running Scheduled evening post...');
@@ -53,6 +54,13 @@ cron.schedule('0 18 * * *', async () => {
         console.error('[cron] Midday post failed: ', err.message);
     }
 }, {timezone: 'UTC'});
+
+cron.schedule('*/30 * * * *', async () => {
+    console.log('[cron] Running refresh news');
+    refreshNews();
+}, {timezone: 'UTC'});
+
+refreshNews();
 
 console.log('[cron] Morning post scheduled for 10:10 AM UTC daily');
 
