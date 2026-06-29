@@ -9,6 +9,7 @@ import assignmentRoutes from './routes/assignments.js';
 import userRouter from './routes/users.js';
 import discordRoutes from './routes/discord.js';
 import newsRoutes from './routes/news.js';
+import slateRoutes from './routes/slate.js';
 import discordClient from './services/bot.js';
 import path from 'path';
 import pool from './db/pool.js';
@@ -27,6 +28,7 @@ app.use('/api/leaderboard', leaderBoardRouter);
 app.use('/api/discord', discordRoutes);
 app.use('/api/users', userRouter);
 app.use('/api/news', newsRoutes);
+app.use('/api/slate', slateRoutes);
 app.use(express.static(process.cwd()));
 
 app.get('/health', (req, res) => {

@@ -1,0 +1,16 @@
+.date-strip {
+  background: var(--accent-secondary);
+  color: var(--bg);
+  width: 100%;
+}
+
+.date-strip-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px 24px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: space-between;
+}

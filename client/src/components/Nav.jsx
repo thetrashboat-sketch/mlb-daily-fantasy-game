@@ -21,7 +21,7 @@ function Nav() {
     <header className="nav">
       <div className="nav-inner">
         <NavLink to="/dashboard" className="nav-logo">
-          DAILY DINGER
+          DAILY <span className="nav-logo-accent">DINGER</span>
         </NavLink>
         <nav className="nav-links">
           <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>

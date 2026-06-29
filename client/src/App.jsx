@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Nav from './components/Nav.jsx'
+import DateStrip from './components/DateStrip.jsx'
 import Login from './pages/Login.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Leaderboard from './pages/Leaderboard.jsx'
@@ -8,11 +9,12 @@ import HowItWorks from './pages/HowItWorks.jsx'
 
 function App() {
   const location = useLocation();
-  const showNav = location.pathname !== '/'; 
+  const showLayout = location.pathname !== '/'; 
 
   return (
     <>
-    {showNav && <Nav />}
+    {showLayout && <Nav />}
+    {showLayout && <DateStrip />}
 
     <Routes>
       <Route path="/" element={<Login />} />

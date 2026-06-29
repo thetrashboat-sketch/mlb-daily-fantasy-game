@@ -3,7 +3,7 @@ import './Login.css'
 
 function Login() {
   const [mode, setMode] = useState('login')
-  const [form, setForm] = useState({ username: '', email: '', password: '' })
+  const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' })
   const [error, setError] = useState(null)
 
   const isLogin = mode === 'login'
@@ -15,6 +15,11 @@ function Login() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
+
+    if (!isLogin && form.password !== form.confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
 
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
     const body = isLogin
@@ -81,7 +86,7 @@ function Login() {
 
           {!isLogin && (
             <div className="field">
-              <label htmlFor="email">Email <span className="optional">(optional)</span></label>
+              <label htmlFor="email">Email <span className="optional">(optional NOTE: You will not be able to recover your account without email)</span></label>
               <input
                 id="email"
                 name="email"
@@ -105,6 +110,21 @@ function Login() {
               autoComplete={isLogin ? 'current-password' : 'new-password'}
             />
           </div>
+
+          {!isLogin && (
+            <div className="field">
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                required
+                autoComplete="new-password"
+              />
+            </div>
+          )}
 
           {error && <p className="login-error">{error}</p>}
 
