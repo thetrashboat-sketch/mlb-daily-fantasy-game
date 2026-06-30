@@ -115,6 +115,12 @@
   text-align: center;
 }
 
+.login-success{
+  font-size: 13px;
+  color: var(--negative);
+  text-align: center;
+}
+
 .login-submit {
   background-color: var(--accent);
   color: var(--bg);

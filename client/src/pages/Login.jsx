@@ -5,8 +5,10 @@ function Login() {
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' })
   const [error, setError] = useState(null)
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState(null)
 
   const isLogin = mode === 'login'
+  const isForgot = mode === 'forgot'
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -47,6 +49,30 @@ function Login() {
     }
   }
 
+  async function handleForgotPassword(e) {
+    e.preventDefault()
+    setForgotPasswordMessage(null)
+
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: form.username }),
+      })
+
+      const data = await res.json()
+      setForgotPasswordMessage(data.message || data.error || 'Something went wrong.')
+    } catch (err) {
+      setForgotPasswordMessage('Unable to connect. Please try again.')
+    }
+  }
+
+  function switchMode(newMode) {
+    setMode(newMode)
+    setError(null)
+    setForgotPasswordMessage(null)
+  }
+
   return (
     <div className="login-page">
       <div className="login-card">
@@ -55,83 +81,118 @@ function Login() {
           <p className="login-tagline">Claim your hitter. No Ball Knowledge Required</p>
         </div>
 
-        <div className="login-toggle">
-          <button
-            className={`toggle-btn ${isLogin ? 'active' : ''}`}
-            onClick={() => { setMode('login'); setError(null) }}
-          >
-            Sign In
-          </button>
-          <button
-            className={`toggle-btn ${!isLogin ? 'active' : ''}`}
-            onClick={() => { setMode('register'); setError(null) }}
-          >
-            Register
-          </button>
-        </div>
-
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="field">
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              value={form.username}
-              onChange={handleChange}
-              required
-              autoComplete="username"
-            />
+        {!isForgot && (
+          <div className="login-toggle">
+            <button
+              className={`toggle-btn ${isLogin ? 'active' : ''}`}
+              onClick={() => switchMode('login')}
+            >
+              Sign In
+            </button>
+            <button
+              className={`toggle-btn ${!isLogin ? 'active' : ''}`}
+              onClick={() => switchMode('register')}
+            >
+              Register
+            </button>
           </div>
+        )}
 
-          {!isLogin && (
+        {isForgot ? (
+          <form className="login-form" onSubmit={handleForgotPassword}>
             <div className="field">
-              <label htmlFor="email">Email <span className="optional">(optional NOTE: You will not be able to recover your account without email)</span></label>
+              <label htmlFor="username">Username</label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                autoComplete="email"
-              />
-            </div>
-          )}
-
-          <div className="field">
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              autoComplete={isLogin ? 'current-password' : 'new-password'}
-            />
-          </div>
-
-          {!isLogin && (
-            <div className="field">
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                value={form.confirmPassword}
+                id="username"
+                name="username"
+                type="text"
+                value={form.username}
                 onChange={handleChange}
                 required
-                autoComplete="new-password"
+                autoComplete="username"
               />
             </div>
-          )}
 
-          {error && <p className="login-error">{error}</p>}
+            {forgotPasswordMessage && <p className="login-error">{forgotPasswordMessage}</p>}
 
-          <button type="submit" className="login-submit">
-            {isLogin ? 'Sign In' : 'Create Account'}
-          </button>
-        </form>
+            <button type="submit" className="login-submit">
+              Send Reset Link
+            </button>
+
+            <button type="button" className="forgot-password-link" onClick={() => switchMode('login')}>
+              Back to Sign In
+            </button>
+          </form>
+        ) : (
+          <form className="login-form" onSubmit={handleSubmit}>
+            <div className="field">
+              <label htmlFor="username">Username</label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                value={form.username}
+                onChange={handleChange}
+                required
+                autoComplete="username"
+              />
+            </div>
+
+            {!isLogin && (
+              <div className="field">
+                <label htmlFor="email">Email <span className="optional">(optional)</span></label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                />
+              </div>
+            )}
+
+            <div className="field">
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                required
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
+              />
+            </div>
+
+            {!isLogin && (
+              <div className="field">
+                <label htmlFor="confirmPassword">Confirm Password</label>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={form.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  autoComplete="new-password"
+                />
+              </div>
+            )}
+
+            {isLogin && (
+              <button type="button" className="forgot-password-link" onClick={() => switchMode('forgot')}>
+                Forgot password?
+              </button>
+            )}
+
+            {error && <p className="login-error">{error}</p>}
+
+            <button type="submit" className="login-submit">
+              {isLogin ? 'Sign In' : 'Create Account'}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   )

@@ -18,7 +18,8 @@
     "fast-xml-parser": "^5.9.3",
     "jsonwebtoken": "^9.0.0",
     "node-cron": "^4.2.1",
-    "pg": "^8.11.0"
+    "pg": "^8.11.0",
+    "resend": "^6.16.0"
   },
   "devDependencies": {
     "dotenv-cli": "^11.0.0",
