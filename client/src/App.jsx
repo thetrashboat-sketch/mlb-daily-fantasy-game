@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard.jsx'
 import Leaderboard from './pages/Leaderboard.jsx'
 import Profile from './pages/Profile.jsx'
 import HowItWorks from './pages/HowItWorks.jsx'
+import ResetPassword from './pages/ResetPassword.jsx'
 
 function App() {
   const location = useLocation();
@@ -22,6 +23,7 @@ function App() {
       <Route path="/Leaderboard" element={<Leaderboard />} />
       <Route path="/Profile" element={<Profile />} />
       <Route path="/how-it-works" element={<HowItWorks />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
     </Routes>
     </>
   )

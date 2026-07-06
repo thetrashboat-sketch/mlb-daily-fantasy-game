@@ -1,6 +1,7 @@
 -- mlb-daily-fantasy-game
 -- Database schema
--- Run: psql -U youruser -d yourdbname -f server/db/schema.sql
+-- Run: psql -U youruser -d yourdbname -f server/db/schema.sql: THIS RE-RUNS THE ENTIRE DB AND WILL DROP SOME TABLES
+-- psql postgresql://postgres:RHmdw9WqrFV4me@localhost:5432/mlb_daily_fantasy: Use to check db
 
 DROP TABLE IF EXISTS user_achievements CASCADE;
 DROP TABLE IF EXISTS daily_scores CASCADE;

@@ -68,10 +68,14 @@
 .logout-btn {
   background: none;
   border: none;
+  border-bottom: 2px solid transparent;
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 0;
+  padding-bottom: 4px;
+  line-height: normal;
+  color: var(--text-muted);
 }

@@ -117,7 +117,7 @@
 
 .login-success{
   font-size: 13px;
-  color: var(--negative);
+  color: var(--positive);
   text-align: center;
 }
 
@@ -136,4 +136,23 @@
 
 .login-submit:hover {
   opacity: 0.9;
+}
+
+.forgot-password-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+  margin-top: -8px;
+}
+
+.forgot-password-link:hover {
+  color: var(--accent);
 }
