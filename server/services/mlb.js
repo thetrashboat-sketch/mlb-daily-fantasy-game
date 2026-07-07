@@ -38,7 +38,7 @@ export const getPlayerRoster = async () => {
         }
     }
     return playersList;
-};
+}
 
 export async function getScheduledGames(date) {
     const res = await fetch(`${BASE_URL}/schedule?sportId=1&date=${date}`);

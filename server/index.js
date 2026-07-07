@@ -1,6 +1,8 @@
+import dotenv from 'dotenv';
+dotenv.config({ path: '../.env' });
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import './services/scheduler.js';
 import authRoutes from './routes/auth.js';
@@ -13,9 +15,6 @@ import slateRoutes from './routes/slate.js';
 import discordClient from './services/bot.js';
 import path from 'path';
 import pool from './db/pool.js';
-
-
-dotenv.config({ path: '../.env' });
 
 const app = express();
 const PORT = process.env.PORT || 3000;

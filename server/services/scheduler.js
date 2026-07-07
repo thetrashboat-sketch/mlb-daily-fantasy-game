@@ -25,7 +25,7 @@ cron.schedule('0 8 * * *', async () => {
 
 console.log('[cron] Score finalization scheduled for 8:00 AM UTC daily');
 
-cron.schedule('0 10 * * *', async () => {
+cron.schedule('15 10 * * *', async () => {
     console.log('[cron] Running scheduled player sync...');
     try {
       const result = await syncPlayers();
@@ -37,7 +37,7 @@ cron.schedule('0 10 * * *', async () => {
 
 console.log('[cron] Player Sync scheduled for 10:00 AM UTC daily');
 
-cron.schedule('10 10 * * *', async () => {
+cron.schedule('20 10 * * *', async () => {
     console.log('[cron] Running scheduled morning post');
     try{
         await postPicksOpen();

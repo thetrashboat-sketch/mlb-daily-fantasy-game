@@ -20,7 +20,8 @@ export async function postPicksOpen (){
                         COALESCE(SUM(ds.fantasy_points), 0) AS season_total
                     FROM discord_server_members as dsm
                     JOIN users u ON u.id = dsm.user_id
-                    LEFT JOIN daily_scores ds ON ds.user_id = u.id AND ds.is_finalized = true
+                    LEFT JOIN daily_assignments da ON da.user_id = u.id
+                    LEFT JOIN daily_scores ds ON ds.assignment_id = da.id AND ds.is_finalized = TRUE
                     WHERE dsm.discord_server_id = $1
                     GROUP BY u.id, u.username, u.discord_id
                     ORDER BY season_total DESC
@@ -49,7 +50,7 @@ export async function postPicksOpen (){
                     flags: [4096]
                 });
             } catch(err){
-                console.error(`[opening post] Failed to post to ${server.guild_name}:`, err.message);
+                console.error(`[opening post] Failed to post to ${server.guild_name}:`, err);
             }
         }
 
@@ -160,7 +161,7 @@ export async function postEveningUpdate(){
                 const playerName = result.player_name;
 
                 if(!result.playerPlayed){
-                    const currentMultiplier = member.next_day_multiplier ?? 1;
+                    const currentMultiplier = Number(member.next_day_multiplier ?? 1);
                     const nextMultiplier = currentMultiplier + 1;
                     lines.push(`${mention} picked **${playerName}** → did not play · **0 pts** *(multiplier will be ${nextMultiplier}x tomorrow)*`);
                 } else{
