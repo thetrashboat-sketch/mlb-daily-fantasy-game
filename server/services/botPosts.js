@@ -165,6 +165,10 @@ export async function postEveningUpdate(){
                     const nextMultiplier = currentMultiplier + 1;
                     lines.push(`${mention} picked **${playerName}** → did not play · **0 pts** *(multiplier will be ${nextMultiplier}x tomorrow)*`);
                 } else{
+                    const multiplier = Number(member.next_day_multiplier ?? 1);
+                    const basePoints = Number(result.points);
+                    const finalPoints = basePoints * multiplier;
+                    const multiplierNote = multiplier > 1 ? ` *(${multiplier}x multiplier applied)*` : '';
                     const summary = result.stat_summary ? `${result.stat_summary} · ` : '';
                     lines.push(`${mention} picked **${playerName}** → ${summary}**+${result.points} pts**`);
                 }
