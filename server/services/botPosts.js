@@ -95,7 +95,7 @@ export async function postMiddayUpdate(){
             const unpicked = serverUsers.rows.filter(u => u.player_name === null);
 
             for (const user of picked){
-                postMessage += `<@${user.discord_username}> → ${user.player_name} (${user.team_abbr} - ${user.position})\n`
+                postMessage += `<@${user.discord_id}> → ${user.player_name} (${user.team_abbr} - ${user.position})\n`
             }
 
             if (unpicked.length > 0) {
@@ -184,6 +184,4 @@ export async function postEveningUpdate(){
             console.error(`[bot] Failed to post evening update to ${server.guild_name}:`, err.message);
         }
     }
-
-
 }
