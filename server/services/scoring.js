@@ -142,6 +142,58 @@ export async function getLiveScoresForDate(dateStr){
         }
     }
 
+    const results = [];
+
+    for (const a of assignments){
+        try{
+            const statsList = a.game_pks.map(pk => boxScores[pk]?.[a.mlb_id]);
+            const stats = mergeStats(statsList);
+            const playerPlayed = stats.batting.atBats > 0 ||
+                stats.batting.baseOnBalls > 0 ||
+                stats.batting.hitByPitch > 0;
+            const points = playerPlayed ? calculateFantasyPoints(stats) : 0;
+
+            // Opponent is per-game, not summable, so it's read directly off
+            // the raw per-game stats rather than passed through mergeStats().
+            // Doubleheader games are always vs. the same opponent, so the
+            // first game's opponent is always correct.
+            const opponent = statsList[0]?.opponent ?? null;
+
+            const { gameLog, career } = await getPlayerHittingHistory(a.mlb_id);
+
+            const context = {
+                mlbId: a.mlb_id,
+                batting: stats.batting,
+                hadHitToday: (stats.batting.hits ?? 0) > 0,
+                playerPlayed,
+                date,
+                opponent,
+                gameLog,
+                careerHitsBeforeToday: career.hits,
+                careerHomeRunsBeforeToday: career.homeRuns,
+            };
+
+            await checkAchievements('finalization', context, a.user_id, a.assignment_id);
+
+            results.push({
+                assignment_id: a.assignment_id,
+                user_id: a.user_id,
+                discord_id: a.discord_id,
+                username: a.username,
+                player_name: a.player_name,
+                game_pks: a.game_pks,
+                points,
+                playerPlayed,
+                stat_summary: stats?.batting?.summary
+            });
+
+        }catch(err){
+            console.error(`[scoring] Failed to process assignment ${a.assignment_id}:`, err.message);
+        }
+
+        return results;
+    }
+
     /*
     return assignments.map(a => {
         const statsList = a.game_pks.map(pk => boxScores[pk]?.[a.mlb_id]);
