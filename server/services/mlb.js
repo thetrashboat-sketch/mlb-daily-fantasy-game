@@ -147,14 +147,19 @@ export async function getBoxScore(gamePk){
 
     if (bxScoreData.error) throw new Error(`${bxScoreData.error.message}`);
 
-    const allPlayers = [
-        ...Object.values(bxScoreData.teams.home.players),
-        ...Object.values(bxScoreData.teams.away.players),
-    ];
+    const homeAbbr = bxScoreData.teams.home.team.abbreviation;
+    const awayAbbr = bxScoreData.teams.away.team.abbreviation;
 
-    for (const player of allPlayers) {
+    const homePlayers = Object.values(bxScoreData.teams.home.players)
+        .map(player => ({ player, opponent: awayAbbr }));
+    const awayPlayers = Object.values(bxScoreData.teams.away.players)
+        .map(player => ({ player, opponent: homeAbbr }));
+
+    const allPlayers = [...homePlayers, ...awayPlayers];
+
+    for (const {player, opponent} of allPlayers) {
         if (player.position.code !== '1') {
-            stats[player.person.id] = player.stats;
+            stats[player.person.id] = {...player.stats, opponent};
         }
     }
 
@@ -212,6 +217,98 @@ export async function getSeasonStats(mlbId) {
         runs: s.runs,
         ops: s.ops,
     };
+}
+
+export async function getGameContext(gamePk){
+    const [playByPlayRes, linescoreRes] = await Promise.all([
+        fetch(`${BASE_URL}/game/${gamePk}/playByPlay`),
+        fetch(`${BASE_URL}/game/${gamePk}/linescore`),
+    ]);
+
+    const playByPlay = await playByPlayRes.json();
+    const linescore = await linescoreRes.json();
+
+    if (playByPlay.error) throw new Error(`${playByPlay.error.message}`);
+    if (linescore.error) throw new Error(`${linescore.error.message}`);
+
+    const allPlays = playByPlay.allPlays || [];
+
+    // Derive isLeadoff: minimum atBatIndex per inning+halfInning group
+    const minAtBatIndexByHalfInning = {};
+    for (const play of allPlays) {
+        const key = `${play.about.inning}-${play.about.halfInning}`;
+        const idx = play.about.atBatIndex;
+        if (minAtBatIndexByHalfInning[key] === undefined || idx < minAtBatIndexByHalfInning[key]) {
+            minAtBatIndexByHalfInning[key] = idx;
+        }
+    }
+
+    for (const play of allPlays) {
+        const key = `${play.about.inning}-${play.about.halfInning}`;
+        play.isLeadoff = play.about.atBatIndex === minAtBatIndexByHalfInning[key];
+    }
+
+    // Derive isWalkoff: last play, bottom half, caused a scoring event,
+    // and the batting (home) team was tied or trailing before it resolved
+    if (allPlays.length > 0) {
+        const lastPlay = allPlays[allPlays.length - 1];
+        const isBottomHalf = lastPlay.about.halfInning === 'bottom';
+        const hadScoringRunner = (lastPlay.runners || []).some(r => r.details?.isScoringEvent);
+
+        let isWalkoff = false;
+        if (isBottomHalf && hadScoringRunner) {
+            const homeScoreBefore = lastPlay.result?.homeScore - (lastPlay.result?.rbi || 0);
+            const awayScoreBefore = lastPlay.result?.awayScore;
+            isWalkoff = homeScoreBefore <= awayScoreBefore;
+        }
+
+        lastPlay.isWalkoff = isWalkoff;
+    }
+
+    return { playByPlay, linescore };
+}
+
+/**
+ * Fetches a player's game log and career hitting totals in a single call.
+ * Used to build achievement context: game log feeds streak evaluation,
+ * career totals feed first-hit/first-HR checks. Both returned raw —
+ * no pre-computed booleans or derived stats. evaluateCondition() does
+ * the interpretive work.
+ *
+ * @param {number} mlbId
+ * @returns {Promise<{ gameLog: Array<Object>, career: { hits: number, homeRuns: number, [key: string]: any } }>}
+ */
+export async function getPlayerHittingHistory(mlbId) {
+    // TODO: hardcoded season — replace with dynamic year once season rollover is handled
+    const season = 2026;
+
+    const url = `${BASE_URL}/people/${mlbId}/stats` +
+        `?stats=gameLog,career&group=hitting&season=${season}`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch hitting history for player ${mlbId}: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Each requested stat type comes back as a separate entry in data.stats,
+    // distinguished by stats[i].type.displayName ("gameLog" / "career").
+    const gameLogEntry = data.stats?.find(s => s.type?.displayName === 'gameLog');
+    const careerEntry = data.stats?.find(s => s.type?.displayName === 'career');
+
+    const gameLog = gameLogEntry?.splits ?? [];
+    // career totals live one level deeper, at splits[0].stat, since it's a
+    // single aggregate split rather than a per-game array.
+    // Default hits/homeRuns to 0 explicitly so context-building never has
+    // to null-check these two fields downstream.
+    const career = {
+        hits: 0,
+        homeRuns: 0,
+        ...(careerEntry?.splits?.[0]?.stat ?? {}),
+    };
+
+    return { gameLog, career };
 }
 
 export async function getTeams() {

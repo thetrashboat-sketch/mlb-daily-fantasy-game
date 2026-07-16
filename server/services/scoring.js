@@ -142,6 +142,7 @@ export async function getLiveScoresForDate(dateStr){
         }
     }
 
+    /*
     return assignments.map(a => {
         const statsList = a.game_pks.map(pk => boxScores[pk]?.[a.mlb_id]);
         const stats = mergeStats(statsList);
@@ -162,7 +163,7 @@ export async function getLiveScoresForDate(dateStr){
             stat_summary: stats?.batting?.summary
         };
     });
-
+    */
 }
 
 function mergeStats(statsList){
