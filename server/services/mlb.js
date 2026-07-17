@@ -3,6 +3,7 @@ import pool from '../db/pool.js';
 import { getGameDate } from '../../shared/gameDate.js';
 
 const BASE_URL = 'https://statsapi.mlb.com/api/v1';
+const BIO_BATCH_SIZE = 50;
 
 export const getPlayerRoster = async () => {
     let playersList = [];
@@ -309,6 +310,35 @@ export async function getPlayerHittingHistory(mlbId) {
     };
 
     return { gameLog, career };
+}
+
+/**
+ * Fetches bio data (currently just debut date) for multiple players in
+ * batched requests. Returns a Map<mlbId, debutDate|null> so callers can
+ * look up each player without re-parsing the response shape.
+ *
+ * @param {number[]} mlbIds
+ * @returns {Promise<Map<number, string|null>>}
+ */
+export async function getPlayersBioBatch(mlbIds) {
+    const debutDateMap = new Map();
+
+    for (let i = 0; i < mlbIds.length; i += BIO_BATCH_SIZE) {
+        const chunk = mlbIds.slice(i, i + BIO_BATCH_SIZE);
+        const url = `${BASE_URL}/people/?personIds=${chunk.join(',')}`;
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch player bios: ${response.status}`);
+        }
+
+        const data = await response.json();
+        for (const person of data.people ?? []) {
+            debutDateMap.set(person.id, person.mlbDebutDate ?? null);
+        }
+    }
+
+    return debutDateMap;
 }
 
 export async function getTeams() {

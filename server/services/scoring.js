@@ -1,7 +1,8 @@
 import cron from 'node-cron';
 import pool from '../db/pool.js';
 import { getGameDate } from '../../shared/gameDate.js';
-import { getBoxScore, calculateFantasyPoints } from './mlb.js';
+import { getBoxScore, calculateFantasyPoints, getPlayerHittingHistory } from './mlb.js';
+import { checkAchievements } from './achievements.js';
 
 const HARD_CUTOFF_HOUR_UTC = 9;
 const HARD_CUTOFF_MINUTE_UTC = 30;
@@ -190,8 +191,6 @@ export async function getLiveScoresForDate(dateStr){
         }catch(err){
             console.error(`[scoring] Failed to process assignment ${a.assignment_id}:`, err.message);
         }
-
-        return results;
     }
 
     /*
@@ -216,6 +215,7 @@ export async function getLiveScoresForDate(dateStr){
         };
     });
     */
+    return results;
 }
 
 function mergeStats(statsList){

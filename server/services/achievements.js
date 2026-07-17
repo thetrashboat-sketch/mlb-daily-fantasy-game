@@ -33,6 +33,8 @@ export async function getUserAchievement(userId, achievementId) {
 }
 
 export async function unlockAchievement(userId, achievementId, assignmentId = null) {
+  console.log(`Unlocked achievement for ${userId} - ${achievementId}`);//remove this
+
   await pool.query(
     `INSERT INTO user_achievements (user_id, achievement_id, assignment_id)
      VALUES ($1, $2, $3)`,

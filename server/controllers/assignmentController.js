@@ -1,6 +1,6 @@
 import pool from '../db/pool.js';
 import { getGameDate } from '../../shared/gameDate.js';
-import { getBoxScore, getSeasonStats } from '../services/mlb.js';
+import { getBoxScore, getSeasonStats, getPlayerHittingHistory, checkAchievements } from '../services/mlb.js';
 
 export async function claimAssignment(req, res) {
     const userId = req.user.id;
@@ -29,7 +29,7 @@ export async function claimAssignment(req, res) {
         //pick a random active hitter 
         const playerResult = await client.query(
             `SELECT p.id, p.name, p.team_id, p.team_name, p.team_abbr, p.position, p.headshot_url,
-            p.mlb_id
+            p.mlb_id, p.dob, p.debut_date
             FROM players p
             JOIN scheduled_games sg
                 ON p.team_id = sg.home_team_id OR p.team_id = sg.away_team_id 
@@ -75,6 +75,22 @@ export async function claimAssignment(req, res) {
         );
 
         await client.query('COMMIT');
+
+        // Assignment-phase achievement check — best effort, claim already succeeded
+        try {
+            const { career } = await getPlayerHittingHistory(player.mlb_id);
+            const context = {
+                mlbId: player.mlb_id,
+                date: today,
+                dob: player.dob,
+                debutDate: player.debut_date,
+                careerHitsBeforeToday: career.hits,
+                careerHomeRunsBeforeToday: career.homeRuns,
+            };
+            await checkAchievements('assignment', context, userId, assignment.rows[0].id);
+        } catch (err) {
+            console.error('[claimAssignment] achievement check failed:', err.message);
+        }
 
         res.status(201).json({
             assignment_id: assignment.rows[0].id,
