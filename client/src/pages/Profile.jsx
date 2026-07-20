@@ -13,6 +13,7 @@ function Profile() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
+  const [achievements, setAchievements] = useState([])
 
   const discordParam = searchParams.get('discord')
   const discordMessage = discordParam ? DISCORD_MESSAGES[discordParam] : null
@@ -31,6 +32,11 @@ function Profile() {
     }
   }, [discordParam])
 
+  useEffect(() => {
+    fetchProfile()
+    fetchAchievements()
+  }, [])
+
   async function fetchProfile() {
     try {
       const res = await fetch('/api/users/me', { credentials: 'include' })
@@ -45,6 +51,17 @@ function Profile() {
       setError('Could not load your profile. Please refresh.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function fetchAchievements() {
+    try {
+      const res = await fetch('/api/achievements/mine', { credentials: 'include' })
+      if (!res.ok) throw new Error('Failed to load achievements')
+      const data = await res.json()
+      setAchievements(data.achievements)
+    } catch (err) {
+      setAchievements([])
     }
   }
 
@@ -107,9 +124,26 @@ function Profile() {
 
         <div className="profile-section">
           <h2 className="section-title">Achievements</h2>
-          <p className="text-muted achievements-placeholder">
-            Coming soon — start earning achievements as the season progresses.
-          </p>
+          {achievements.length > 0 ? (
+            <ul className="achievement-list">
+              {achievements.map(a => (
+                <li 
+                  key={a.key} 
+                  className={`achievement-list-item rarity-${a.rarity.toLowerCase()}`}
+                  data-tooltip={a.description}
+                >
+                  <span className="achievement-list-name">{a.name}</span>
+                  {a.times_earned > 1 && (
+                    <span className="achievement-list-count">×{a.times_earned}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted achievements-placeholder">
+              No Achievements Earned Yet — start earning achievements as the season progresses.
+            </p>
+          )}
         </div>
       </div>
     </div>

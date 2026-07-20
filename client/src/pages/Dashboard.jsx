@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import AchievementPopup from '../components/AchievementPopup/jsx'
+import AchievementPopup from '../components/AchievementPopup.jsx'
 import StatBox from '../components/StatBox.jsx'
 import './Dashboard.css'
 
@@ -153,7 +153,7 @@ async function fetchNews() {
           onClose={dismissAchievement}
         />
       )}
-      
+
       <div className="dashboard-content">
         {!player && (
           <div className="claim-prompt">

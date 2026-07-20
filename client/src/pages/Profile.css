@@ -93,8 +93,70 @@
   background-color: var(--border);
 }
 
-.achievements-placeholder {
+.achievement-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.achievement-list-item {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: var(--surface-2);
+  border-left: 3px solid var(--rarity-common);
   font-size: 14px;
+}
+
+.achievement-list-item::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  font-size: 16px;
+  white-space: normal;
+  width: max-content;
+  max-width: 260px;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.achievement-list-item:hover::after {
+  opacity: 1;
+}
+
+.achievement-list-item.rarity-common { border-left-color: var(--rarity-common); }
+.achievement-list-item.rarity-uncommon { border-left-color: var(--rarity-uncommon); }
+.achievement-list-item.rarity-rare { border-left-color: var(--rarity-rare); }
+.achievement-list-item.rarity-epic { border-left-color: var(--rarity-epic); }
+.achievement-list-item.rarity-legendary { border-left-color: var(--rarity-legendary); }
+
+.achievement-list-name {
+  color: var(--text);
+}
+
+.achievement-list-item.rarity-common .achievement-list-name { color: var(--rarity-common); }
+.achievement-list-item.rarity-uncommon .achievement-list-name { color: var(--rarity-uncommon); }
+.achievement-list-item.rarity-rare .achievement-list-name { color: var(--rarity-rare); }
+.achievement-list-item.rarity-epic .achievement-list-name { color: var(--rarity-epic); }
+.achievement-list-item.rarity-legendary .achievement-list-name { color: var(--rarity-legendary); }
+
+.achievement-list-count {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 13px;
 }
 
 .profile-error {

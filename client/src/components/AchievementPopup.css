@@ -61,6 +61,13 @@
   margin-bottom: 1rem;
 }
 
+.achieved-date {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
 .achievement-popup.rarity-common .achievement-rarity { color: var(--rarity-common); }
 .achievement-popup.rarity-uncommon .achievement-rarity { color: var(--rarity-uncommon); }
 .achievement-popup.rarity-rare .achievement-rarity { color: var(--rarity-rare); }
