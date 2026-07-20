@@ -1,11 +1,3 @@
-:root {
-  --rarity-common: #D1D5D8;
-  --rarity-uncommon: #41A85F;
-  --rarity-rare: #2C82C9;
-  --rarity-epic: #9365B8;
-  --rarity-legendary: #FAC51C;
-}
-
 .achievement-overlay {
   position: fixed;
   inset: 0;
@@ -17,13 +9,14 @@
 }
 
 .achievement-popup {
-  background: #1a1a1a;
+  background: var(--surface);
   border: 2px solid var(--rarity-common);
   border-radius: 12px;
   padding: 2rem;
   max-width: 360px;
   text-align: center;
   box-shadow: 0 0 24px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-body);
 }
 
 .achievement-popup.rarity-common { border-color: var(--rarity-common); }
@@ -33,31 +26,35 @@
 .achievement-popup.rarity-legendary { border-color: var(--rarity-legendary); }
 
 .achievement-label {
+  font-family: var(--font-mono);
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.05em;
-  color: #999;
+  color: var(--text-muted);
   margin-bottom: 0.5rem;
 }
 
 .achievement-name {
+  font-family: var(--font-display);
   font-size: 1.5rem;
+  color: var(--text);
   margin: 0.25rem 0;
 }
 
 .achievement-description {
-  color: #ccc;
+  color: var(--text);
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
 }
 
 .achievement-player {
-  color: #888;
+  color: var(--text-muted);
   font-size: 0.85rem;
   margin-bottom: 0.5rem;
 }
 
 .achievement-rarity {
+  font-family: var(--font-mono);
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -71,15 +68,18 @@
 .achievement-popup.rarity-legendary .achievement-rarity { color: var(--rarity-legendary); }
 
 .achievement-dismiss {
-  background: #333;
-  color: #fff;
+  font-family: var(--font-mono);
+  background: var(--accent);
+  color: var(--text);
   border: none;
   border-radius: 6px;
   padding: 0.6rem 1.5rem;
   cursor: pointer;
   font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .achievement-dismiss:hover {
-  background: #444;
+  background: var(--surface-2);
 }

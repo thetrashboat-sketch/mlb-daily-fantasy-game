@@ -13,6 +13,11 @@
   --positive:   #5CE65C;
   --border:     #3C3A30;
   --accent-secondary: #DCD5C2;
+  --rarity-common: #D1D5D8;
+  --rarity-uncommon: #41A85F;
+  --rarity-rare: #2C82C9;
+  --rarity-epic: #9365B8;
+  --rarity-legendary: #FAC51C;
 
   --font-display: 'Oswald', sans-serif;
   --font-body:    'Oswald', sans-serif;
