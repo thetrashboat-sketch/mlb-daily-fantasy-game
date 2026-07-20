@@ -125,6 +125,23 @@ export async function syncPlayers() {
             [activeIds]
         );
 
+        // Backfill debut dates for any active player still missing one
+        const { rows: missingDebut } = await client.query(
+            `SELECT mlb_id FROM players WHERE mlb_id = ANY($1::int[]) AND debut_date IS NULL`,
+            [activeIds]
+        );
+
+        if (missingDebut.length > 0) {
+            const debutDateMap = await getPlayersBioBatch(missingDebut.map(r => r.mlb_id));
+            for (const [mlbId, debutDate] of debutDateMap) {
+                if (debutDate === null) continue;
+                await client.query(
+                    `UPDATE players SET debut_date = $1 WHERE mlb_id = $2`,
+                    [debutDate, mlbId]
+                );
+            }
+        }
+
         // Sync today's scheduled games in the same transaction
         const today = getGameDate();
         const gamesCount = await syncScheduledGames(today, client);

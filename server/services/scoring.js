@@ -162,9 +162,12 @@ export async function getLiveScoresForDate(dateStr){
 
             const { gameLog, career } = await getPlayerHittingHistory(a.mlb_id);
 
+            const singles = stats.batting.hits - stats.batting.doubles - stats.batting.triples - stats.batting.homeRuns;
+            const extraBaseHits = stats.batting.doubles + stats.batting.triples + stats.batting.homeRuns;
+
             const context = {
                 mlbId: a.mlb_id,
-                batting: stats.batting,
+                batting: {...stats.batting, singles, extraBaseHits},
                 hadHitToday: (stats.batting.hits ?? 0) > 0,
                 playerPlayed,
                 date,

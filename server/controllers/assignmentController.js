@@ -1,6 +1,7 @@
 import pool from '../db/pool.js';
 import { getGameDate } from '../../shared/gameDate.js';
-import { getBoxScore, getSeasonStats, getPlayerHittingHistory, checkAchievements } from '../services/mlb.js';
+import { getBoxScore, getSeasonStats, getPlayerHittingHistory } from '../services/mlb.js';
+import { checkAchievements } from '../services/achievements.js';
 
 export async function claimAssignment(req, res) {
     const userId = req.user.id;

@@ -21,6 +21,16 @@ export function evaluateCondition(condition, context) {
   }
   const value = getField(context, condition.field);
   if (value === undefined) return false; // missing data = condition not met, not an error
+
+  // `valueField` lets a condition compare two context fields instead of a
+  // static value — e.g. { field: "hits", op: "eq", valueField: "atBats" }
+  // for a "perfect day" achievement. Falls back to the static `value`.
+  const comparand = condition.valueField !== undefined
+    ? getField(context, condition.valueField)
+    : condition.value;
+
+  if (comparand === undefined) return false; // missing data = condition not met, not an error
+
   return OPS[condition.op](value, condition.value);
 }
 

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import pool from '../db/pool.js';
 import { getPlayersBioBatch } from '../services/mlb.js';
 
