@@ -1,0 +1,85 @@
+:root {
+  --rarity-common: #D1D5D8;
+  --rarity-uncommon: #41A85F;
+  --rarity-rare: #2C82C9;
+  --rarity-epic: #9365B8;
+  --rarity-legendary: #FAC51C;
+}
+
+.achievement-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.achievement-popup {
+  background: #1a1a1a;
+  border: 2px solid var(--rarity-common);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.5);
+}
+
+.achievement-popup.rarity-common { border-color: var(--rarity-common); }
+.achievement-popup.rarity-uncommon { border-color: var(--rarity-uncommon); }
+.achievement-popup.rarity-rare { border-color: var(--rarity-rare); }
+.achievement-popup.rarity-epic { border-color: var(--rarity-epic); }
+.achievement-popup.rarity-legendary { border-color: var(--rarity-legendary); }
+
+.achievement-label {
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  color: #999;
+  margin-bottom: 0.5rem;
+}
+
+.achievement-name {
+  font-size: 1.5rem;
+  margin: 0.25rem 0;
+}
+
+.achievement-description {
+  color: #ccc;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.achievement-player {
+  color: #888;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.achievement-rarity {
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+.achievement-popup.rarity-common .achievement-rarity { color: var(--rarity-common); }
+.achievement-popup.rarity-uncommon .achievement-rarity { color: var(--rarity-uncommon); }
+.achievement-popup.rarity-rare .achievement-rarity { color: var(--rarity-rare); }
+.achievement-popup.rarity-epic .achievement-rarity { color: var(--rarity-epic); }
+.achievement-popup.rarity-legendary .achievement-rarity { color: var(--rarity-legendary); }
+
+.achievement-dismiss {
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.achievement-dismiss:hover {
+  background: #444;
+}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import AchievementPopup from '../components/AchievementPopup/jsx'
 import StatBox from '../components/StatBox.jsx'
 import './Dashboard.css'
 
@@ -10,6 +11,7 @@ function Dashboard() {
   const [error, setError] = useState(null)
   const [seasonStats, setSeasonStats] = useState(null)
   const [newsItems, setNewsItems] = useState(null)
+  const [achievementQueue, setAchievementQueue] = useState([])
 
   useEffect(() => {
     fetchToday()
@@ -23,6 +25,10 @@ function Dashboard() {
 
   useEffect(() => {
     fetchNews()
+  }, [])
+
+  useEffect(()=>{
+    fetchUnnotifiedAchievements()
   }, [])
 
   async function fetchToday() {
@@ -109,6 +115,28 @@ async function fetchNews() {
     }
   }
 
+  async function fetchUnnotifiedAchievements() {
+    try {
+      const res = await fetch('/api/achievements/unnotified', { credentials: 'include' })
+
+      if (!res.ok) {
+        throw new Error('Failed to load achievements')
+      }
+
+      const data = await res.json()
+      if (data.achievements && data.achievements.length > 0) {
+        setAchievementQueue(data.achievements)
+      }
+    } catch (err) {
+      // Silent failure — missing a notification popup isn't worth
+      // surfacing an error to the user
+    }
+  }
+
+  function dismissAchievement() {
+    setAchievementQueue(prev => prev.slice(1))
+  }
+
   if (loading) {
     return (
       <div className="dashboard-page">
@@ -119,6 +147,13 @@ async function fetchNews() {
 
   return (
     <div className="dashboard-page">
+      {achievementQueue.length > 0 && (
+        <AchievementPopup
+          achievement={achievementQueue[0]}
+          onClose={dismissAchievement}
+        />
+      )}
+      
       <div className="dashboard-content">
         {!player && (
           <div className="claim-prompt">
