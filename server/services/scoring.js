@@ -55,7 +55,7 @@ export async function finalizeScores(dateStr) {
     let skipped = 0;
 
     for (const row of liveScores) {
-        const { assignment_id, user_id, points, playerPlayed, game_pks, stat_summary } = row;
+        const { assignment_id, user_id, points, playerPlayed, game_pks, stat_summary, context } = row;
 
         const next_day_multiplier = multiplierMap[user_id] ?? 1;
         const multiplierToApply = playerPlayed ? next_day_multiplier : 1;
@@ -96,6 +96,8 @@ export async function finalizeScores(dateStr) {
 
             await client.query('COMMIT');
             finalized++;
+            await checkAchievements('finalization', context, user_id, assignment_id);
+
         } catch (err) {
             await client.query('ROLLBACK');
             console.error(`[scoring] Failed to finalize assignment ${assignment_id}:`, err.message);
@@ -177,8 +179,6 @@ export async function getLiveScoresForDate(dateStr){
                 careerHomeRunsBeforeToday: career.homeRuns,
             };
 
-            await checkAchievements('finalization', context, a.user_id, a.assignment_id);
-
             results.push({
                 assignment_id: a.assignment_id,
                 user_id: a.user_id,
@@ -188,7 +188,8 @@ export async function getLiveScoresForDate(dateStr){
                 game_pks: a.game_pks,
                 points,
                 playerPlayed,
-                stat_summary: stats?.batting?.summary
+                stat_summary: stats?.batting?.summary,
+                context
             });
 
         }catch(err){
