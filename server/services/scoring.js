@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import pool from '../db/pool.js';
 import { getGameDate } from '../../shared/gameDate.js';
-import { getBoxScore, calculateFantasyPoints, getPlayerHittingHistory } from './mlb.js';
+import { getBoxScore, calculateFantasyPoints, getPlayerHittingHistory, getGameContext } from './mlb.js';
 import { checkAchievements } from './achievements.js';
 
 const HARD_CUTOFF_HOUR_UTC = 9;
@@ -97,7 +97,6 @@ export async function finalizeScores(dateStr) {
             await client.query('COMMIT');
             finalized++;
             await checkAchievements('finalization', context, user_id, assignment_id);
-
         } catch (err) {
             await client.query('ROLLBACK');
             console.error(`[scoring] Failed to finalize assignment ${assignment_id}:`, err.message);
@@ -136,13 +135,40 @@ export async function getLiveScoresForDate(dateStr){
 
     const uniqueGamePks = [...new Set(assignments.flatMap(a => a.game_pks))];
     const boxScores = {};
+    const gameContexts = {};
 
     for (const gamePk of uniqueGamePks) {
+        const [boxScoreResult, gameContextResult] = await Promise.allSettled([
+            getBoxScore(gamePk),
+            getGameContext(gamePk)
+        ]);
+
+        if (boxScoreResult.status === 'fulfilled'){
+            boxScores[gamePk] = boxScoreResult.value;
+        }
+        else{
+            console.error(`[scoring] Failed to fetch box score for game ${gamePk}:`, boxScoreResult.reason.message);
+        }
+
+        if(gameContextResult.status === 'fulfilled'){
+            gameContexts[gamePk] = gameContextResult.value;
+        }
+        else{
+            console.error(`[scoring] Failed to fetch game context for game ${gamePk}:`, gameContextResult.reason.message);
+        }
+
+        /*
         try {
             boxScores[gamePk] = await getBoxScore(gamePk);
         } catch (err) {
             console.error(`[scoring] Failed to fetch box score for game ${gamePk}:`, err.message);
         }
+
+        try{
+            gameContexts[gamePk] = await getGameContext(gamePk);
+        } catch(err){
+            console.error(`[scoring] Failed to fetch game context for game ${gamePk}:`, err.message);
+        }*/
     }
 
     const results = [];
@@ -164,6 +190,8 @@ export async function getLiveScoresForDate(dateStr){
 
             const { gameLog, career } = await getPlayerHittingHistory(a.mlb_id);
 
+            const { leadoff, walkoff } = getPlayerPlayFlags(a.mlb_id, a.game_pks, gameContexts);
+
             const singles = stats.batting.hits - stats.batting.doubles - stats.batting.triples - stats.batting.homeRuns;
             const extraBaseHits = stats.batting.doubles + stats.batting.triples + stats.batting.homeRuns;
 
@@ -177,6 +205,8 @@ export async function getLiveScoresForDate(dateStr){
                 gameLog,
                 careerHitsBeforeToday: career.hits,
                 careerHomeRunsBeforeToday: career.homeRuns,
+                leadoff,
+                walkoff,
             };
 
             results.push({
@@ -244,4 +274,39 @@ function mergeStats(statsList){
     mergedBatting.summary = summaries.join(' | ');
 
     return {batting: mergedBatting};
+}
+
+function getPlayerPlayFlags(mlbId, gamePks, gameContexts) {
+    const leadoff = { hit: false, homeRun: false, gameLeadoff: false };
+    const walkoff = { happened: false, eventType: null };
+
+    const HIT_EVENT_TYPES = new Set(['single', 'double', 'triple', 'home_run']);
+
+    for (const gamePk of gamePks) {
+        const ctx = gameContexts[gamePk];
+        if (!ctx) continue;
+
+        const allPlays = ctx.playByPlay?.allPlays || [];
+
+        for (const play of allPlays) {
+            if (play.matchup?.batter?.id !== mlbId) continue;
+
+            const eventType = play.result?.eventType;
+
+            if (play.isLeadoff && HIT_EVENT_TYPES.has(eventType)) {
+                leadoff.hit = true;
+                if (eventType === 'home_run') leadoff.homeRun = true;
+                if (play.about?.inning === 1 && play.about?.halfInning === 'top') {
+                    leadoff.gameLeadoff = true;
+                }
+            }
+
+            if (play.isWalkoff) {
+                walkoff.happened = true;
+                walkoff.eventType = eventType;
+            }
+        }
+    }
+
+    return { leadoff, walkoff };
 }

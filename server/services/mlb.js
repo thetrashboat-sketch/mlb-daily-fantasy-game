@@ -271,12 +271,12 @@ export async function getGameContext(gamePk){
     if (allPlays.length > 0) {
         const lastPlay = allPlays[allPlays.length - 1];
         const isBottomHalf = lastPlay.about.halfInning === 'bottom';
-        const hadScoringRunner = (lastPlay.runners || []).some(r => r.details?.isScoringEvent);
+        const runsScoredOnPlay = (lastPlay.runners || []).some(r => r.details?.isScoringEvent).length;
 
         let isWalkoff = false;
-        if (isBottomHalf && hadScoringRunner) {
-            const homeScoreBefore = lastPlay.result?.homeScore - (lastPlay.result?.rbi || 0);
-            const awayScoreBefore = lastPlay.result?.awayScore;
+        if (isBottomHalf && runsScoredOnPlay > 0) {
+            const homeScoreBefore = (lastPlay.result?.homeScore ?? 0) - runsScoredOnPlay;
+            const awayScoreBefore = lastPlay.result?.awayScore ?? 0;
             isWalkoff = homeScoreBefore <= awayScoreBefore;
         }
 

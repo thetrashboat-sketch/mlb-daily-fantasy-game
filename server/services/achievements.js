@@ -6,6 +6,7 @@ const OPS = {
   gt: (a, b) => a > b,
   lt: (a, b) => a < b,
   eq: (a, b) => a === b,
+  in: (a, b) => Array.isArray(b) && b.includes(a),
 };
 
 function getField(obj, path) {
@@ -31,7 +32,7 @@ export function evaluateCondition(condition, context) {
 
   if (comparand === undefined) return false; // missing data = condition not met, not an error
 
-  return OPS[condition.op](value, condition.value);
+  return OPS[condition.op](value, comparand);
 }
 
 export async function getUserAchievement(userId, achievementId) {
