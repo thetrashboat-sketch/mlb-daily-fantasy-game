@@ -1,19 +1,19 @@
 import cron from 'node-cron';
 import pool from '../db/pool.js';
-import { getGameDate } from '../../shared/gameDate.js';
+import { getGameDate, getCurrentSeason } from '../../shared/gameDate.js';
 
 const BASE_URL = 'https://statsapi.mlb.com/api/v1';
 const BIO_BATCH_SIZE = 50;
 
 export const getPlayerRoster = async () => {
     let playersList = [];
-    const teamsRes = await fetch (`${BASE_URL}/teams?sportId=1&season=2026`);
+    const teamsRes = await fetch (`${BASE_URL}/teams?sportId=1&season=${getCurrentSeason()}`);
     const teamsData = await teamsRes.json();
 
     if (teamsData.error) throw new Error(`${teamsData.error.message}`);
 
     for (const team of teamsData.teams){
-        const playersRes = await fetch (`${BASE_URL}/teams/${team.id}/roster?season=2026`);
+        const playersRes = await fetch (`${BASE_URL}/teams/${team.id}/roster?season=${getCurrentSeason()}`);
         const playersData = await playersRes.json();
 
         if (playersData.error) throw new Error(`${playersData.error.message}`);
@@ -213,7 +213,7 @@ export function calculateFantasyPoints(stats){
 }
 
 export async function getSeasonStats(mlbId) {
-    const season = new Date().getFullYear();
+    const season = getCurrentSeason();
     const statsRes = await fetch(`${BASE_URL}/people/${mlbId}/stats?stats=season&group=hitting&season=${season}`);
     const statsData = await statsRes.json();
 
@@ -297,8 +297,7 @@ export async function getGameContext(gamePk){
  * @returns {Promise<{ gameLog: Array<Object>, career: { hits: number, homeRuns: number, [key: string]: any } }>}
  */
 export async function getPlayerHittingHistory(mlbId) {
-    // TODO: hardcoded season — replace with dynamic year once season rollover is handled
-    const season = 2026;
+    const season = getCurrentSeason();
 
     const url = `${BASE_URL}/people/${mlbId}/stats` +
         `?stats=gameLog,career&group=hitting&season=${season}`;
@@ -359,13 +358,13 @@ export async function getPlayersBioBatch(mlbIds) {
 }
 
 export async function getTeams() {
-  const response = await fetch(`${BASE_URL}/teams?sportId=1&season=2026`);
+  const response = await fetch(`${BASE_URL}/teams?sportId=1&season=${getCurrentSeason()}`);
   if (!response.ok) throw new Error(`MLB API error: ${response.status}`);
   return response.json();
 }
 
 export async function getRoster(teamId) {
-  const response = await fetch(`${BASE_URL}/teams/${teamId}/roster?season=2026`);
+  const response = await fetch(`${BASE_URL}/teams/${teamId}/roster?season=${getCurrentSeason()}`);
   if (!response.ok) throw new Error(`MLB API error: ${response.status}`);
   return response.json();
 }

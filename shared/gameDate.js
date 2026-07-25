@@ -12,3 +12,7 @@ export function getGameDate() {
   
   return now.toISOString().split('T')[0];
 }
+
+export function getCurrentSeason(){
+  return new Date().getFullYear();
+}

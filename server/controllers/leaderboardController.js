@@ -1,9 +1,10 @@
 import pool from '../db/pool.js';
-import { getGameDate } from '../../shared/gameDate.js';
+import { getGameDate, getCurrentSeason } from '../../shared/gameDate.js';
 
 export async function getLeaderboard(req, res){
     try {
     const today = getGameDate();
+    const season = getCurrentSeason();
  
     const { rows } = await pool.query(
       `
@@ -11,7 +12,10 @@ export async function getLeaderboard(req, res){
         u.id                                                          AS user_id,
         u.username,
         COALESCE(
-          SUM(ds.fantasy_points) FILTER (WHERE ds.is_finalized),
+          SUM(ds.fantasy_points) FILTER (WHERE 
+            ds.is_finalized
+            AND
+            EXTRACT(YEAR FROM a.assigned_date) = $2),
           0
         )                                                             AS season_total,
         ds_today.fantasy_points                                       AS today_points,
@@ -35,7 +39,7 @@ export async function getLeaderboard(req, res){
         season_total DESC,
         u.username   ASC
       `,
-      [today]
+      [today, season]
     );
  
     // Add 1-based rank. Users tied on season_total get the same rank;

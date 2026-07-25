@@ -190,7 +190,7 @@ export async function getLiveScoresForDate(dateStr){
 
             const { gameLog, career } = await getPlayerHittingHistory(a.mlb_id);
 
-            const { leadoff, walkoff } = getPlayerPlayFlags(a.mlb_id, a.game_pks, gameContexts);
+            const { leadoff, walkoff, grandSlam } = getPlayerPlayFlags(a.mlb_id, a.game_pks, gameContexts);
 
             const singles = stats.batting.hits - stats.batting.doubles - stats.batting.triples - stats.batting.homeRuns;
             const extraBaseHits = stats.batting.doubles + stats.batting.triples + stats.batting.homeRuns;
@@ -207,6 +207,7 @@ export async function getLiveScoresForDate(dateStr){
                 careerHomeRunsBeforeToday: career.homeRuns,
                 leadoff,
                 walkoff,
+                grandSlam,
             };
 
             results.push({
@@ -279,6 +280,7 @@ function mergeStats(statsList){
 function getPlayerPlayFlags(mlbId, gamePks, gameContexts) {
     const leadoff = { hit: false, homeRun: false, gameLeadoff: false };
     const walkoff = { happened: false, eventType: null };
+    const grandSlam = { hit: false };
 
     const HIT_EVENT_TYPES = new Set(['single', 'double', 'triple', 'home_run']);
 
@@ -305,8 +307,12 @@ function getPlayerPlayFlags(mlbId, gamePks, gameContexts) {
                 walkoff.happened = true;
                 walkoff.eventType = eventType;
             }
+
+            if (eventType === 'home_run' && play.result?.rbi === 4){
+                grandSlam.hit = true;
+            }
         }
     }
 
-    return { leadoff, walkoff };
+    return { leadoff, walkoff, grandSlam };
 }
