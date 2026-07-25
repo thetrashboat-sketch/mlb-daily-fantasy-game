@@ -1,0 +1,158 @@
+.history-page {
+  flex: 1;
+  padding: 40px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.history-card {
+  width: 100%;
+  max-width: 720px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  padding: 40px;
+}
+
+.history-title {
+  font-size: 28px;
+  color: var(--accent);
+  margin-bottom: 24px;
+}
+
+.history-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.history-filter-select {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.history-error {
+  color: var(--negative);
+  text-align: center;
+  padding: 20px 0;
+}
+
+.history-placeholder {
+  padding: 20px 0;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.history-row {
+  padding: 12px 16px;
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.history-row-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.history-row-date {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  min-width: 90px;
+}
+
+.history-row-player {
+  flex: 1;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.history-row-team {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.history-row-points {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.history-row-summary {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.history-row-achievements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.achievement-badge {
+  font-size: 12px;
+  padding: 4px 10px;
+  background-color: var(--surface);
+  border-left: 3px solid var(--rarity-common);
+}
+
+.achievement-badge.rarity-common { border-left-color: var(--rarity-common); color: var(--rarity-common); }
+.achievement-badge.rarity-uncommon { border-left-color: var(--rarity-uncommon); color: var(--rarity-uncommon); }
+.achievement-badge.rarity-rare { border-left-color: var(--rarity-rare); color: var(--rarity-rare); }
+.achievement-badge.rarity-epic { border-left-color: var(--rarity-epic); color: var(--rarity-epic); }
+.achievement-badge.rarity-legendary { border-left-color: var(--rarity-legendary); color: var(--rarity-legendary); }
+
+.history-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.history-page-btn {
+  background-color: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.history-page-btn:hover:not(:disabled) {
+  background-color: var(--border);
+}
+
+.history-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.history-page-indicator {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+}

@@ -4,6 +4,7 @@ export async function getMe(req, res) {
     try{
         const result = await pool.query(`
             SELECT
+                u.id,
                 u.username,
                 u.created_at,
                 u.discord_id,
@@ -22,6 +23,7 @@ export async function getMe(req, res) {
         const row = result.rows[0];
 
         res.json({
+            id: row.id,
             username: row.username,
             created_at: row.created_at,
             discord_linked: row.discord_id !== null,
