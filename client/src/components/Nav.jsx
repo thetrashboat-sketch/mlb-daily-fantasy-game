@@ -36,7 +36,7 @@ function Nav() {
           <NavLink to="/how-it-works" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
             How It Works
           </NavLink>
-          <button className="nav-link logout-btn" onClick={handleLogout}>
+          <button className="logout-btn" onClick={handleLogout}>
             Log Out
           </button>
         </nav>
