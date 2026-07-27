@@ -186,3 +186,8 @@
   color: var(--negative);
   border-color: var(--negative);
 }
+
+.history-link-btn {
+  display: inline-block;
+  margin-top: 8px;
+}

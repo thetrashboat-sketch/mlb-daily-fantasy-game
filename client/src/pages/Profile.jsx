@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import './Profile.css'
 
 const DISCORD_MESSAGES = {
@@ -123,6 +124,10 @@ function Profile() {
         </div>
 
         <div className="profile-section">
+          <h2 className="section-title">Stats History</h2>
+          <Link to={`/History/${profile.id}`} className="link-discord-btn history-link-btn">
+            View History
+          </Link>
           <h2 className="section-title">Achievements</h2>
           {achievements.length > 0 ? (
             <ul className="achievement-list">

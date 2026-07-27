@@ -156,3 +156,23 @@
   font-size: 13px;
   color: var(--text-muted);
 }
+
+.history-row-multiplier {
+  margin-top: 8px;
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  border-left: 3px solid var(--accent);
+  padding: 4px 10px;
+  background-color: var(--surface);
+}
+
+.history-row-points.positive {
+  color: var(--positive);
+}
+
+.history-row-points.negative {
+  color: var(--negative);
+}

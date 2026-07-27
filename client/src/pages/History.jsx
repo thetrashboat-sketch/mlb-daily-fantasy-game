@@ -9,6 +9,8 @@ const SORT_OPTIONS = [
   { value: 'points_asc', label: 'Lowest Points' },
 ]
 
+const APP_START_YEAR = 2026
+
 function History() {
   const { userId } = useParams()
   const [history, setHistory] = useState([])
@@ -58,6 +60,22 @@ function History() {
     setPage(1)
   }
 
+  function pointsClass(points) {
+    if (points > 0) return 'history-row-points positive'
+    if (points < 0) return 'history-row-points negative'
+    return 'history-row-points'
+  }
+
+
+  function getSeasonOptions() {
+    const currentYear = new Date().getFullYear()
+    const years = []
+    for (let year = currentYear; year >= APP_START_YEAR; year--) {
+        years.push(year)
+    }
+    return years
+  }
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
 
   return (
@@ -72,7 +90,9 @@ function History() {
             onChange={handleSeasonChange}
           >
             <option value="">All Seasons</option>
-            <option value="2026">2026</option>
+            {getSeasonOptions().map(year => (
+                <option key={year} value={year}>{year}</option>
+            ))}
           </select>
 
           <select
@@ -111,8 +131,12 @@ function History() {
                     <span className="history-row-player">
                       {row.player_name} <span className="history-row-team">({row.team_abbr})</span>
                     </span>
-                    <span className="history-row-points">{row.fantasy_points} pts</span>
+                    <span className={pointsClass(row.fantasy_points)}>{row.fantasy_points} pts</span>
                   </div>
+
+                  {row.multiplier_applied > 1 && (
+                    <p className="history-row-multiplier">Multiplier applied: ×{row.multiplier_applied}</p>
+                  )}
 
                   {row.stat_summary && (
                     <p className="history-row-summary">{row.stat_summary}</p>
