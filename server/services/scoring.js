@@ -38,7 +38,7 @@ export async function finalizeScores(dateStr) {
 
     if (liveScores.length === 0) {
         console.log(`[scoring] No assignments found for ${date}.`);
-        return { finalized: 0, skipped: 0 };
+        return { finalized: 0, skipped: 0, alreadyFinalized: 0 };
     }
 
     console.log(`[scoring] Found ${liveScores.length} assignments.`);
@@ -53,6 +53,7 @@ export async function finalizeScores(dateStr) {
 
     let finalized = 0;
     let skipped = 0;
+    let alreadyFinalized = 0;
 
     for (const row of liveScores) {
         const { assignment_id, user_id, points, playerPlayed, game_pks, stat_summary, context } = row;
@@ -65,6 +66,20 @@ export async function finalizeScores(dateStr) {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
+
+            // Guard against double-processing: if this assignment was already
+            // finalized (e.g. a manual/testing re-run over an already-finalized
+            // date), skip it entirely — do not touch daily_scores or the
+            // user's multiplier again.
+            const { rows: existingRows } = await client.query(
+                `SELECT is_finalized FROM daily_scores WHERE assignment_id = $1`,
+                [assignment_id]
+            );
+            if (existingRows[0]?.is_finalized) {
+                await client.query('ROLLBACK');
+                alreadyFinalized++;
+                continue;
+            }
 
             await client.query(
                 `INSERT INTO daily_scores (
@@ -106,8 +121,8 @@ export async function finalizeScores(dateStr) {
         }
     }
 
-    console.log(`[scoring] Done — finalized: ${finalized}, skipped: ${skipped}`);
-    return { finalized, skipped };
+    console.log(`[scoring] Done — finalized: ${finalized}, already finalized (skipped): ${alreadyFinalized}, errors (skipped): ${skipped}`);
+    return { finalized, skipped, alreadyFinalized };
 }
 
 export async function getLiveScoresForDate(dateStr){
