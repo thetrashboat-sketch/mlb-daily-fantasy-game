@@ -10,6 +10,7 @@ function Login() {
   const isLogin = mode === 'login'
   const isForgot = mode === 'forgot'
 
+  // ...handleChange, handleSubmit, handleForgotPassword, switchMode unchanged...
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
@@ -75,42 +76,45 @@ function Login() {
 
   return (
     <div className="login-page">
-      <div className="login-card">
-        <div className="login-header">
-          <h1 className="login-logo">DAILY DINGER</h1>
-          <p className="login-tagline">Claim your hitter. No Ball Knowledge Required</p>
+      <div className="login-shell">
+
+        <div className="login-branding">
+          <div className="login-branding-inner">
+            <div className="login-logo-slot">
+              {/* logo vector goes here, e.g. <img src="/logo.svg" alt="Daily Dinger" /> */}
+            </div>
+            <h1 className="login-wordmark">
+              DAILY <span className="login-wordmark-accent">DINGER</span>
+            </h1>
+            <p className="login-tagline">Claim your hitter. No Ball Knowledge Required</p>
+          </div>
         </div>
 
-        {!isForgot && (
-          <div className="login-toggle">
-            <button
-              className={`toggle-btn ${isLogin ? 'active' : ''}`}
-              onClick={() => switchMode('login')}
-            >
-              Sign In
-            </button>
-            <button
-              className={`toggle-btn ${!isLogin ? 'active' : ''}`}
-              onClick={() => switchMode('register')}
-            >
-              Register
-            </button>
-          </div>
-        )}
+        <div className="login-form-panel">
+          {!isForgot && (
+            <div className="login-toggle">
+              <button className={`toggle-btn ${isLogin ? 'active' : ''}`} onClick={() => switchMode('login')}>
+                Sign In
+              </button>
+              <button className={`toggle-btn ${!isLogin ? 'active' : ''}`} onClick={() => switchMode('register')}>
+                Register
+              </button>
+            </div>
+          )}
 
-        {isForgot ? (
-          <form className="login-form" onSubmit={handleForgotPassword}>
-            <div className="field">
-              <label htmlFor="username">Username</label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                value={form.username}
-                onChange={handleChange}
-                required
-                autoComplete="username"
-              />
+          {isForgot ? (
+            <form className="login-form" onSubmit={handleForgotPassword}>
+              <div className="field">
+                <label htmlFor="username">Username</label>
+                <input
+                  id="username"
+                  name="username"
+                  type="text"
+                  value={form.username}
+                  onChange={handleChange}
+                  required
+                  autoComplete="username"
+                />
             </div>
 
             {forgotPasswordMessage && <p className="login-error">{forgotPasswordMessage}</p>}
@@ -122,77 +126,79 @@ function Login() {
             <button type="button" className="forgot-password-link" onClick={() => switchMode('login')}>
               Back to Sign In
             </button>
-          </form>
-        ) : (
-          <form className="login-form" onSubmit={handleSubmit}>
-            <div className="field">
-              <label htmlFor="username">Username</label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                value={form.username}
-                onChange={handleChange}
-                required
-                autoComplete="username"
-              />
-            </div>
-
-            {!isLogin && (
+            </form>
+          ) : (
+            <form className="login-form" onSubmit={handleSubmit}>
               <div className="field">
-                <label htmlFor="email">Email <span className="optional">(optional)</span></label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  autoComplete="email"
-                />
-              </div>
-            )}
+      <label htmlFor="username">Username</label>
+      <input
+        id="username"
+        name="username"
+        type="text"
+        value={form.username}
+        onChange={handleChange}
+        required
+        autoComplete="username"
+      />
+    </div>
 
-            <div className="field">
-              <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                autoComplete={isLogin ? 'current-password' : 'new-password'}
-              />
-            </div>
+    {!isLogin && (
+      <div className="field">
+        <label htmlFor="email">Email <span className="optional">(optional)</span></label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          value={form.email}
+          onChange={handleChange}
+          autoComplete="email"
+        />
+      </div>
+    )}
 
-            {!isLogin && (
-              <div className="field">
-                <label htmlFor="confirmPassword">Confirm Password</label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  required
-                  autoComplete="new-password"
-                />
-              </div>
-            )}
+    <div className="field">
+      <label htmlFor="password">Password</label>
+      <input
+        id="password"
+        name="password"
+        type="password"
+        value={form.password}
+        onChange={handleChange}
+        required
+        autoComplete={isLogin ? 'current-password' : 'new-password'}
+      />
+    </div>
 
-            {isLogin && (
-              <button type="button" className="forgot-password-link" onClick={() => switchMode('forgot')}>
-                Forgot password?
-              </button>
-            )}
+    {!isLogin && (
+      <div className="field">
+        <label htmlFor="confirmPassword">Confirm Password</label>
+        <input
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          value={form.confirmPassword}
+          onChange={handleChange}
+          required
+          autoComplete="new-password"
+        />
+      </div>
+    )}
 
-            {error && <p className="login-error">{error}</p>}
+    {isLogin && (
+      <button type="button" className="forgot-password-link" onClick={() => switchMode('forgot')}>
+        Forgot password?
+      </button>
+    )}
 
-            <button type="submit" className="login-submit">
-              {isLogin ? 'Sign In' : 'Create Account'}
-            </button>
-          </form>
-        )}
+    {error && <p className="login-error">{error}</p>}
+
+    <button type="submit" className="login-submit">
+      {isLogin ? 'Sign In' : 'Create Account'}
+    </button>
+            </form>
+          )}
+        </div>
+
       </div>
     </div>
   )
