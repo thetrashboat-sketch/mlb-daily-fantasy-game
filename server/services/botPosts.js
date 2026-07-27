@@ -170,7 +170,8 @@ export async function postEveningUpdate(){
                     const finalPoints = basePoints * multiplier;
                     const multiplierNote = multiplier > 1 ? ` *(${multiplier}x multiplier applied)*` : '';
                     const summary = result.stat_summary ? `${result.stat_summary} · ` : '';
-                    lines.push(`${mention} picked **${playerName}** → ${summary}**+${result.points} pts**`);
+                    const ptsSign = result.points >= 0 ? '+':'';
+                    lines.push(`${mention} picked **${playerName}** → ${summary}**${ptsSign}${result.points} pts**`);
                 }
             }
 
