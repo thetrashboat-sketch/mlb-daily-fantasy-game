@@ -8,11 +8,12 @@ const SCORING_RULES = [
   { label: 'RBI', points: '+1' },
   { label: 'Run', points: '+1' },
   { label: 'Walk', points: '+1' },
-  { label: 'Stolen Base', points: '+2' },
+  { label: 'Stolen Base', points: '+1' },
   { label: 'Hit By Pitch', points: '+1' },
   { label: 'Strikeout', points: '-1' },
   { label: 'Caught Stealing', points: '-1' },
-  { label: 'GIDP', points: '-1' },
+  { label: 'GIDP', points: '-2' },
+  { label: 'Ground into Triple Play', points: '-3'}
 ]
 
 function HowItWorks() {
